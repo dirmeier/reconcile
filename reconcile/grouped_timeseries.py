@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import sparse
 import pandas as pd
 from jax import numpy as jnp
 
@@ -11,17 +12,21 @@ class GroupedTimeseries:
         self._groups = groups
         self._group_names = list(groups.columns)
 
-        self._create_g_mat()
+        gmat = self._create_g_mat()
+        gmat = self._gmat_as_integer(gmat)
+        self._s_matrix = self._smatrix(gmat)
 
-    def data(self):
+    def bottom_timeseries(self):
         return self._y
 
-    def summing_matrix(self):
-        return self._s
+    def all_timeseries(self):
+        return self._y @ self._s_matrix.T
 
-    @staticmethod
-    def _paste0(a, b):
-        return np.array([":".join([e, k]) for e, k in zip(a, b)])
+    def summing_matrix(self):
+        return self._s_matrix
+
+    def reconcile(self, predictions):
+        pass
 
     def _create_g_mat(self):
         """
@@ -95,5 +100,42 @@ class GroupedTimeseries:
 
         g_matrix = np.vstack(token + groups)
         indexes = np.unique(g_matrix, axis=0, return_index=True)[1]
-        g_matrix = g_matrix[sorted(indexes), :][:-1, :]
+        g_matrix = g_matrix[sorted(indexes), :]
+        g_matrix = np.vstack([np.repeat("Root", g_matrix.shape[1]), g_matrix])
+
         return g_matrix
+
+    @staticmethod
+    def _paste0(a, b):
+        return np.array([":".join([e, k]) for e, k in zip(a, b)])
+
+    @staticmethod
+    def _gmat_as_integer(gmat):
+        gmat = np.vstack(
+            [
+                pd.factorize(
+                    gmat[i, :],
+                )[0]
+                for i in range(gmat.shape[0])
+            ]
+        )
+        gmat = gmat.astype(np.int32)
+        return gmat
+
+    @staticmethod
+    def _smatrix(gmat):
+        mats = [None] * gmat.shape[0]
+        for i in range(gmat.shape[0]):
+            ia = gmat[
+                i,
+            ]
+            ra = np.ones(gmat.shape[1])
+            ja = np.arange(gmat.shape[1])
+            m = sparse.csr_matrix((ra, (ia, ja)))
+            mats[i] = m
+
+        from scipy.sparse import vstack
+
+        mat = vstack(mats)
+
+        return mat
