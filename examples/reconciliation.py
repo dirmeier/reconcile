@@ -63,7 +63,8 @@ def sample_grouped_timeseries():
 
 def run():
     timeseries, groups = sample_grouped_timeseries()
-    GroupedTimeseries(timeseries, groups)
+    gts = GroupedTimeseries(timeseries, groups)
+    print(gts.all_timeseries().shape)
 
 
 if __name__ == "__main__":
