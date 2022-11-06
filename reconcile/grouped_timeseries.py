@@ -12,8 +12,12 @@ class GroupedTimeseries:
         self._groups = groups
         self._group_names = list(groups.columns)
 
-        gmat = self._create_g_mat()
-        gmat = self._gmat_as_integer(gmat)
+        if len(self._group_names) > 1:
+            gmat = self._gts_create_g_mat()
+            gmat = self._gts_gmat_as_integer(gmat)
+        else:
+            out_edges_per_level, labels, idxs = self._hts_create_nodes()
+            gmat = self._hts_create_g_mat(out_edges_per_level)
         self._s_matrix = self._smatrix(gmat)
 
     def bottom_timeseries(self):
@@ -28,7 +32,11 @@ class GroupedTimeseries:
     def reconcile(self, predictions):
         pass
 
-    def _create_g_mat(self):
+    @staticmethod
+    def _paste0(a, b):
+        return np.array([":".join([e, k]) for e, k in zip(a, b)])
+
+    def _gts_create_g_mat(self):
         """
         Compute the 'G Matrix'. This is a direct transpilation of the method
         'CreateGmat' of the R package 'hts' (version 6.0.2)
@@ -59,16 +67,11 @@ class GroupedTimeseries:
             )
             if sub_len[i + 1] >= 2:
                 for j in range(1, sub_len[i + 1]):
-                    col = np.array(
-                        [
-                            ":".join([e, k])
-                            for e, k in zip(
-                                token[i][j - 1],
-                                temp_tokens[
-                                    cs[i] + j,
-                                ],
-                            )
-                        ]
+                    col = self._paste0(
+                        token[i][j - 1],
+                        temp_tokens[
+                            cs[i] + j,
+                        ],
                     )
                     token[i].append(col)
             token[i] = np.vstack(token[i])
@@ -106,11 +109,7 @@ class GroupedTimeseries:
         return g_matrix
 
     @staticmethod
-    def _paste0(a, b):
-        return np.array([":".join([e, k]) for e, k in zip(a, b)])
-
-    @staticmethod
-    def _gmat_as_integer(gmat):
+    def _gts_gmat_as_integer(gmat):
         gmat = np.vstack(
             [
                 pd.factorize(
@@ -122,13 +121,79 @@ class GroupedTimeseries:
         gmat = gmat.astype(np.int32)
         return gmat
 
+    def _hts_create_nodes(self):
+        tokens_per_level = {}
+        for i, r in self._groups.iterrows():
+            els = ":".join([g for g in r]).split(":")
+            for j, el in enumerate(els):
+                if j not in tokens_per_level:
+                    tokens_per_level[j] = []
+                tokens_per_level[j].append(":".join(els[: (j + 1)]))
+
+        unique_tokens_per_level = {
+            i: np.unique(tokens) for i, tokens in tokens_per_level.items()
+        }
+
+        out_edges_per_level = {1: len(unique_tokens_per_level[0])}
+        for i in range(1, len(unique_tokens_per_level.keys())):
+            out_edges_per_level[i + 1] = {}
+            els = [
+                ":".join(el.split(":")[:i]) for el in unique_tokens_per_level[i]
+            ]
+            values, counts = np.unique(els, return_counts=True)
+            for v, c in zip(values, counts):
+                out_edges_per_level[i + 1][v] = c
+
+        labels = {0: "Total"}
+        for k, v in unique_tokens_per_level.items():
+            labels[k + 1] = list(v)
+
+        a = labels[len(labels) - 1]
+        b = tokens_per_level[len(tokens_per_level) - 1]
+        idxs = [b.index(x) if x in b else None for x in a]
+
+        return out_edges_per_level, labels, idxs
+
+    def _hts_create_g_mat(self, out_edges_per_level):
+        n_bottom_levels = sum(
+            out_edges_per_level[len(out_edges_per_level)].values()
+        )
+        n_elements_per_level = {
+            k: len(v) if isinstance(v, dict) else 1
+            for k, v in out_edges_per_level.items()
+        }
+
+        els = np.zeros(((len(out_edges_per_level) + 1), n_bottom_levels))
+        els[len(out_edges_per_level)] = np.arange(n_bottom_levels)
+        if len(out_edges_per_level) > 1:
+            level = out_edges_per_level[len(out_edges_per_level)]
+            repcount = (
+                list(level.values()) if isinstance(level, dict) else [level]
+            )
+            for i in np.arange(len(out_edges_per_level) - 1, 0, -1):
+                v = np.arange(n_elements_per_level[i + 1])
+                els[i] = np.repeat(v, repcount)
+                times = out_edges_per_level[i]
+                times = (
+                    list(times.values()) if isinstance(times, dict) else [times]
+                )
+                x = pd.DataFrame(
+                    {
+                        "r": repcount,
+                        "g": np.repeat(
+                            np.arange(n_elements_per_level[i]), times
+                        ),
+                    }
+                )
+                x = x.groupby("g").sum()
+                repcount = list(x["r"].values)
+        return els.astype(np.int32)
+
     @staticmethod
     def _smatrix(gmat):
         mats = [None] * gmat.shape[0]
         for i in range(gmat.shape[0]):
-            ia = gmat[
-                i,
-            ]
+            ia = gmat[i, :]
             ra = np.ones(gmat.shape[1])
             ja = np.arange(gmat.shape[1])
             m = sparse.csr_matrix((ra, (ia, ja)))

@@ -61,22 +61,14 @@ def sample_hierarchical_timeseries():
         hierarchy = [
             "VIC:Mel:A",
             "VIC:Mel:B",
-            "VIC:Gel:C",
-            "VIC:Gel:D",
-            "VIC:Mel:E",
-            "VIC:Mel:F",
-            "VIC:Gel:G",
-            "VIC:Gel:H",
-            "NSW:Syd:I",
-            "NSW:Syd:J",
-            "NSW:Woll:K",
-            "NSW:Woll:L",
-            "NSW:Syd:M",
-            "NSW:Syd:N",
-            "NSW:Woll:O",
-            "NSW:Woll:P",
+            "VIC:Gel:A",
+            "VIC:Gel:B",
+            "NSW:Syd:A",
+            "NSW:Syd:B",
+            "NSW:Woll:A",
+            "NSW:Woll:B",
         ]
 
         return pd.DataFrame.from_dict({"h1": hierarchy})
 
-    return _sample_timeseries(100, 16), _group_names()
+    return _sample_timeseries(100, 8), _group_names()
