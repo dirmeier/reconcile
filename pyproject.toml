@@ -25,10 +25,10 @@ mypy = "^0.971"
 bandit = "^1.7.4"
 
 
-
 [tool.poetry.group.examples.dependencies]
 statsmodels = "^0.13.2"
 matplotlib = "^3.6.1"
+
 
 [tool.black]
 line-length = 80
@@ -53,3 +53,9 @@ exclude = '''
 profile = "black"
 line_length = 80
 include_trailing_comma = true
+multi-line-output = 3
+
+
+[tool.flake8]
+max-line-length = 80
+extend-ignore = "E203"
