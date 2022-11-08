@@ -4,6 +4,6 @@ reconcile: Probabilistic reconciliation of time series forecasts
 
 __version__ = "0.0.1"
 
-from reconcile.grouped_timeseries import GroupedTimeseries
+from reconcile.grouping import Grouping
 
-__all__ = ["GroupedTimeseries"]
+__all__ = ["Grouping"]

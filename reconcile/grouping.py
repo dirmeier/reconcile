@@ -4,11 +4,13 @@ import pandas as pd
 from jax import numpy as jnp
 
 
-class GroupedTimeseries:
-    def __init__(self, y: jnp.array, groups: pd.DataFrame):
-        assert y.shape[1] == groups.shape[0]
-        self._y = y
-        self._p = y.shape[1]
+class Grouping:
+    """
+    Class for a grouped timeseries
+    """
+
+    def __init__(self, groups: pd.DataFrame):
+        self._p = groups.shape[0]
         self._groups = groups
         self._group_names = list(groups.columns)
 
@@ -19,18 +21,34 @@ class GroupedTimeseries:
             out_edges_per_level, labels, idxs = self._hts_create_nodes()
             gmat = self._hts_create_g_mat(out_edges_per_level)
         self._s_matrix = self._smatrix(gmat)
+        self._n_all_timeseries = self._s_matrix.shape[0]
 
-    def bottom_timeseries(self):
-        return self._y
+    @property
+    def n_all_timeseries(self):
+        return self._n_all_timeseries
 
-    def all_timeseries(self):
-        return self._y @ self._s_matrix.T
+    @property
+    def n_bottom_timeseries(self):
+        return self._p
+
+    @property
+    def n_upper_timeseries(self):
+        return self.n_all_timeseries - self.n_bottom_timeseries
+
+    def all_timeseries(self, b: jnp.ndarray):
+        return jnp.einsum("ijk,jl->ilk", b, self._s_matrix.T.toarray())
 
     def summing_matrix(self):
         return self._s_matrix
 
-    def reconcile(self, predictions):
-        pass
+    def extract_bottom_timeseries(self, y):
+        return y[:, self.n_upper_timeseries:, :]
+
+    def upper_time_series(self, b):
+        sub = self._s_matrix[
+            : (self.n_all_timeseries - self.n_bottom_timeseries), :
+        ].T
+        return jnp.einsum("ijk,jl->ilk", b, sub.toarray())
 
     @staticmethod
     def _paste0(a, b):

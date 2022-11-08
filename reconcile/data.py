@@ -9,8 +9,13 @@ def _sample_timeseries(N, D):
     maparams = np.array([2.0, 0.35])
     ar = np.r_[1, -arparams]
     ma = np.r_[1, maparams]
+
+    xs = np.arange(N) / N
+    xs = xs.reshape((1, 1, N))
     ys = np.vstack([arma_generate_sample(ar, ma, N) for _ in np.arange(D)]).T
-    return ys
+    ys = ys.reshape((1, D, N))
+
+    return ys, xs
 
 
 def sample_grouped_timeseries():
@@ -59,16 +64,18 @@ def sample_grouped_timeseries():
 def sample_hierarchical_timeseries():
     def _group_names():
         hierarchy = [
-            "VIC:Mel:A",
-            "VIC:Mel:B",
-            "VIC:Gel:A",
-            "VIC:Gel:B",
-            "NSW:Syd:A",
-            "NSW:Syd:B",
-            "NSW:Woll:A",
-            "NSW:Woll:B",
+            "A:10:A",
+            "A:10:B",
+            "A:10:C",
+            "A:20:A",
+            "A:20:B",
+            "B:30:A",
+            "B:30:B",
+            "B:30:C",
+            "B:40:A",
+            "B:40:B",
         ]
 
         return pd.DataFrame.from_dict({"h1": hierarchy})
 
-    return _sample_timeseries(100, 8), _group_names()
+    return _sample_timeseries(100, 10), _group_names()
