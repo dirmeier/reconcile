@@ -62,7 +62,8 @@ class Forecaster(metaclass=abc.ABCMeta):
             a (1 x P x M)-dimensional array of time points where
             the second axis (P) corresponds to the different time series
             and the last axis (M) are the time points for which measurements
-            are to be predicted
+            are to be predicted. The second axis, P, needs to have as many
+            elements as the original training data
 
         Returns
         -------
@@ -88,12 +89,14 @@ class Forecaster(metaclass=abc.ABCMeta):
             a (1 x P x M)-dimensional array of time points where
             the second axis (P) corresponds to the different time series
             and the last axis (M) are the time points for which measurements
-            are to be predicted
+            are to be predicted. The second axis, P, needs to have as many
+            elements as the original training data
         xs_test: chex.Array
             a (1 x P x M)-dimensional array of time points where
             the second axis (P) corresponds to the different time series
             and the last axis (M) are the time points for which measurements
-            are to be predicted
+            are to be predicted. The second axis, P, needs to have as many
+            elements as the original training data
 
         Returns
         -------

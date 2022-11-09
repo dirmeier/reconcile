@@ -23,3 +23,7 @@ command line:
 ```bash
 pip install git+https://github.com/dirmeier/reconcile@<RELEASE>
 ```
+
+## Author
+
+Simon Dirmeier <a href="mailto:sfyrbnd @ pm me">sfyrbnd @ pm me</a>
