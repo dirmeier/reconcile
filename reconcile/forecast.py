@@ -4,6 +4,11 @@ from chex import Array, PRNGKey
 
 
 class Forecaster(metaclass=abc.ABCMeta):
+    @property
+    @abc.abstractmethod
+    def data(self):
+        pass
+
     @abc.abstractmethod
     def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> Array:
         pass

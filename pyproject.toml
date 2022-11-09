@@ -15,6 +15,7 @@ build-backend = "poetry.core.masonry.api"
 python = "^3.9,<3.10"
 blackjax = "^0.9.6"
 chex = "^0.1.5"
+flax = "^0.6.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -35,6 +36,7 @@ gpjax = "^0.5.0"
 
 [tool.black]
 line-length = 80
+extend-ignore = "E203"
 target-version = ['py39']
 exclude = '''
 /(
@@ -61,4 +63,4 @@ multi-line-output = 3
 
 [tool.flake8]
 max-line-length = 80
-extend-ignore = "E203"
+extend-ignore = ["E203", "W503"]
