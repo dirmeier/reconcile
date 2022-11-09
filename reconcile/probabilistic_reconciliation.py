@@ -90,7 +90,7 @@ class ProbabilisticReconciliation:
             "b": self._grouping.extract_bottom_timeseries(initial_positions)
         }
 
-        (curr_keys), rng_key = random.split(rng_key, n_chains + 1)
+        curr_keys, rng_key = random.split(rng_key)
         warmup = blackjax.window_adaptation(
             blackjax.nuts,
             lambda x: _logprob_fn(**x),
@@ -98,7 +98,7 @@ class ProbabilisticReconciliation:
         )
         initial_states = jax.vmap(
             lambda seed, param: warmup.run(seed, param)[0]
-        )(curr_keys, initial_positions)
+        )(random.split(curr_keys, n_chains), initial_positions)
         warmup_init = {"b": initial_positions["b"][0]}
         _, kernel, _ = warmup.run(rng_key, warmup_init)
 

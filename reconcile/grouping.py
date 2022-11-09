@@ -27,7 +27,7 @@ class Grouping:
             gmat = self._gts_create_g_mat()
             gmat = self._gts_gmat_as_integer(gmat)
         else:
-            out_edges_per_level, labels, idxs = self._hts_create_nodes()
+            out_edges_per_level, _, idxs = self._hts_create_nodes()
             gmat = self._hts_create_g_mat(out_edges_per_level)
         self._s_matrix = self._smatrix(gmat)
         self._n_all_timeseries = self._s_matrix.shape[0]
@@ -152,7 +152,7 @@ class Grouping:
         tokens_per_level = {}
         for i, r in self._groups.iterrows():
             els = ":".join([g for g in r]).split(":")
-            for j, el in enumerate(els):
+            for j, _ in enumerate(els):
                 if j not in tokens_per_level:
                     tokens_per_level[j] = []
                 tokens_per_level[j].append(":".join(els[: (j + 1)]))
@@ -181,7 +181,8 @@ class Grouping:
 
         return out_edges_per_level, labels, idxs
 
-    def _hts_create_g_mat(self, out_edges_per_level):
+    @staticmethod
+    def _hts_create_g_mat(out_edges_per_level):
         n_bottom_levels = sum(
             out_edges_per_level[len(out_edges_per_level)].values()
         )
@@ -225,9 +226,5 @@ class Grouping:
             ja = np.arange(gmat.shape[1])
             m = sparse.csr_matrix((ra, (ia, ja)))
             mats[i] = m
-
-        from scipy.sparse import vstack
-
-        mat = vstack(mats)
-
+        mat = sparse.vstack(mats)
         return mat

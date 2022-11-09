@@ -54,7 +54,7 @@ jobs:
       - name: Build package
         run: |
           pip install jaxlib jax
-          poetry install
+          poetry install --without dev
       - name: Run examples
         run: |
           python examples/reconciliation.py
