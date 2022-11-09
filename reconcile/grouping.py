@@ -6,10 +6,19 @@ from scipy import sparse
 
 class Grouping:
     """
-    Class for a grouped timeseries
+    Class that represents a grouping/hierarchy of a grouped or hierarchical
+    time series
     """
 
     def __init__(self, groups: pd.DataFrame):
+        """
+        Initialize a grouping
+
+        Parameters
+        ----------
+        groups: pd.DataFrame
+        """
+
         self._p = groups.shape[0]
         self._groups = groups
         self._group_names = list(groups.columns)

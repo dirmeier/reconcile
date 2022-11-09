@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 class ProbabilisticReconciliation:
+    """
+    Probabilistic reconcilation of hierarchical/grouped time series class
+    """
+
     def __init__(self, grouping: Grouping, forecaster: Forecaster):
         self._forecaster = forecaster
         self._grouping = grouping
