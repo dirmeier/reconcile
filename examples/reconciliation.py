@@ -13,12 +13,12 @@ from jax import random
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
-from reconcile.reconcile import ProbabilisticReconciliation
+from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
 
 
 class GPForecaster(Forecaster):
     def __init__(self):
-        self._models: List
+        self._models: List = []
         self._xs: Array = None
         self._ys: Array = None
 
