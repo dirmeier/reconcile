@@ -190,23 +190,6 @@ numpy = ">=1.18.0"
 tensorflow-probability = ">=0.15.0"
 
 [[package]]
-name = "dm-haiku"
-version = "0.0.8"
-description = "Haiku is a library for building neural networks in JAX."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-absl-py = ">=0.7.1"
-jmp = ">=0.0.2"
-numpy = ">=1.18.0"
-tabulate = ">=0.8.9"
-
-[package.extras]
-jax = ["jax (==0.3.16)", "jaxlib (==0.3.15)"]
-
-[[package]]
 name = "dm-tree"
 version = "0.1.7"
 description = "Tree is a library for working with nested data structures."
@@ -449,21 +432,6 @@ typeguard = ">=2.13.3"
 typing-extensions = ">=4.2.0"
 
 [[package]]
-name = "jmp"
-version = "0.0.2"
-description = "JMP is a Mixed Precision library for JAX."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-numpy = ">=1.19.5"
-
-[package.extras]
-jax = ["jax (>=0.1.71)"]
-jaxlib = ["jaxlib (>=0.1.49)"]
-
-[[package]]
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
@@ -612,7 +580,7 @@ pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 name = "pandas"
 version = "1.5.1"
 description = "Powerful data structures for data analysis, time series, and statistics"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 
@@ -748,7 +716,7 @@ six = ">=1.5"
 name = "pytz"
 version = "2022.5"
 description = "World timezone definitions, modern and historical"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -870,17 +838,6 @@ python-versions = ">=3.8"
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
-name = "tabulate"
-version = "0.9.0"
-description = "Pretty-print tabular data"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.extras]
-widechars = ["wcwidth"]
-
-[[package]]
 name = "tensorflow-probability"
 version = "0.18.0"
 description = "Probabilistic modeling and statistical inference in TensorFlow"
@@ -982,7 +939,7 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9,<3.10"
-content-hash = "46e4c0ed4c0e4eae7174dd6456eb9985cf7672433e27bc6521b67fa1b4d4fec8"
+content-hash = "3344f305bebe1e6ef43e8c709062be0b67b9c3508e5f187a17d92ae5ef2b93ef"
 
 [metadata.files]
 absl-py = [
@@ -1135,10 +1092,6 @@ distrax = [
     {file = "distrax-0.1.2-py3-none-any.whl", hash = "sha256:0f56710372bbca799ae42524dc68b064996a16889c4915011e501b6e9a9d3590"},
     {file = "distrax-0.1.2.tar.gz", hash = "sha256:6fffabc63768c0d32e854061442b8de39cff8946e3d61375a82490aaa02d648c"},
 ]
-dm-haiku = [
-    {file = "dm-haiku-0.0.8.tar.gz", hash = "sha256:ead480150ffa73d5724bdf7216bae34d2ddece4aa7751adac17d5d6fa8e97aa3"},
-    {file = "dm_haiku-0.0.8-py3-none-any.whl", hash = "sha256:a1bc771570151282ca8088759adb663655ba1de6304e0ca6984dba9020f9dede"},
-]
 dm-tree = [
     {file = "dm-tree-0.1.7.tar.gz", hash = "sha256:30fec8aca5b92823c0e796a2f33b875b4dccd470b57e91e6c542405c5f77fd2a"},
     {file = "dm_tree-0.1.7-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:3fae437135b6cbbdd51e96488a35e78c3617defa0b65265e7e8752d506f933fd"},
@@ -1235,10 +1188,6 @@ jaxopt = [
 jaxtyping = [
     {file = "jaxtyping-0.2.7-py3-none-any.whl", hash = "sha256:bcd9f1f6a5424e53f821690e03b3f01ce29c17d6e431b5ceb5b470873b62e38b"},
     {file = "jaxtyping-0.2.7.tar.gz", hash = "sha256:3faa40490182fc2ae308a7301faed85765e0641865a41e20db719f0b7d5444da"},
-]
-jmp = [
-    {file = "jmp-0.0.2-py3-none-any.whl", hash = "sha256:48f94b2ba0c9db759851a23cce2fbfa622e954c3c811651bc11b196246f02527"},
-    {file = "jmp-0.0.2.tar.gz", hash = "sha256:fdb5cec0d10aab4116c2770f24b2adf4f503fcfbb96ce8ef583e1879bdbf1b9b"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
@@ -1736,10 +1685,6 @@ statsmodels = [
 stevedore = [
     {file = "stevedore-4.1.0-py3-none-any.whl", hash = "sha256:3b1cbd592a87315f000d05164941ee5e164899f8fc0ce9a00bb0f321f40ef93e"},
     {file = "stevedore-4.1.0.tar.gz", hash = "sha256:02518a8f0d6d29be8a445b7f2ac63753ff29e8f2a2faa01777568d5500d777a6"},
-]
-tabulate = [
-    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
-    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
 ]
 tensorflow-probability = [
     {file = "tensorflow_probability-0.18.0-py2.py3-none-any.whl", hash = "sha256:80d57e7792c78586f12255ab4a7c359b7e86bc06d487fd629119d9e650624a18"},

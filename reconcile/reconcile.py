@@ -1,15 +1,17 @@
+import logging
+
 import blackjax
 import jax
 import optax
-from chex import PRNGKey, Array
+from chex import Array, PRNGKey
+from flax import linen as nn
 from flax.training.early_stopping import EarlyStopping
 from flax.training.train_state import TrainState
-from jax import numpy as jnp, random
-from flax import linen as nn
+from jax import numpy as jnp
+from jax import random
+
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
-
-import logging
 
 logger = logging.getLogger(__name__)
 
