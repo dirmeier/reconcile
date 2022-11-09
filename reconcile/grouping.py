@@ -36,7 +36,7 @@ class Grouping:
         return self.n_all_timeseries - self.n_bottom_timeseries
 
     def all_timeseries(self, b: jnp.ndarray):
-        return jnp.einsum("ijk,jl->ilk", b, self._s_matrix.T.toarray())
+        return jnp.einsum("...ijk,jl->...ilk", b, self._s_matrix.T.toarray())
 
     def summing_matrix(self):
         return self._s_matrix

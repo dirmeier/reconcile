@@ -1,3 +1,5 @@
+from typing import List
+
 import chex
 import distrax
 import gpjax as gpx
@@ -16,9 +18,17 @@ from reconcile.reconcile import ProbabilisticReconciliation
 
 class GPForecaster(Forecaster):
     def __init__(self):
-        self._models = None
+        self._models: List
+        self._xs: Array = None
+        self._ys: Array = None
 
-    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> Array:
+    @property
+    def data(self):
+        return self._ys, self._xs
+
+    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> None:
+        self._xs = xs
+        self._ys = ys
         chex.assert_rank([ys, xs], [3, 3])
         chex.assert_equal_shape([ys, xs])
 
@@ -52,7 +62,9 @@ class GPForecaster(Forecaster):
         likelihood = gpx.Gaussian(num_datapoints=n)
         posterior = prior * likelihood
         q = gpx.CollapsedVariationalGaussian(
-            prior=prior, likelihood=likelihood, inducing_inputs=z,
+            prior=prior,
+            likelihood=likelihood,
+            inducing_inputs=z,
         )
         sgpr = gpx.CollapsedVI(posterior=posterior, variational_family=q)
         return sgpr, q, likelihood
@@ -74,13 +86,11 @@ class GPForecaster(Forecaster):
             covs[i] = cov.reshape((1, *cov.shape))
         means = jnp.vstack(means)
         covs = jnp.vstack(covs)
-        posterior_predictive = distrax.MultivariateNormalTri(
-            means, covs
-        )
+        posterior_predictive = distrax.MultivariateNormalTri(means, covs)
         return posterior_predictive
 
     def predictive_posterior_probability(
-            self, rng_key: PRNGKey, ys_test: Array, xs_test: Array
+        self, rng_key: PRNGKey, ys_test: Array, xs_test: Array
     ) -> Array:
         chex.assert_rank([ys_test, xs_test], [3, 3])
         chex.assert_equal_shape([ys_test, xs_test])
@@ -100,20 +110,17 @@ def run():
     all_features = jnp.tile(x, [1, all_timeseries.shape[1], 1])
 
     forecaster = GPForecaster()
-    forecaster.fit(
-        random.PRNGKey(1), all_timeseries, all_features
-    )
-    forecaster.posterior_predictive(
-        random.PRNGKey(1), all_features
-    )
+    forecaster.fit(random.PRNGKey(1), all_timeseries, all_features)
+    forecaster.posterior_predictive(random.PRNGKey(1), all_features)
     forecaster.predictive_posterior_probability(
         random.PRNGKey(1), all_timeseries, all_features
     )
 
     recon = ProbabilisticReconciliation(grouping, forecaster)
-    recon.reconciled_posterior_predictive(
+    recon.sample_reconciled_posterior_predictive(
         random.PRNGKey(1), all_features
     )
+    recon.fit_reconciled_posterior_predictive(random.PRNGKey(1), all_features)
 
 
 if __name__ == "__main__":
