@@ -1,7 +1,7 @@
 import numpy as np
-from scipy import sparse
 import pandas as pd
 from jax import numpy as jnp
+from scipy import sparse
 
 
 class Grouping:
@@ -42,7 +42,7 @@ class Grouping:
         return self._s_matrix
 
     def extract_bottom_timeseries(self, y):
-        return y[:, self.n_upper_timeseries:, :]
+        return y[:, self.n_upper_timeseries :, :]
 
     def upper_time_series(self, b):
         sub = self._s_matrix[

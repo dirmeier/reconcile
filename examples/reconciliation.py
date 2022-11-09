@@ -7,10 +7,10 @@ import jax
 import numpy as np
 import optax
 from chex import Array, PRNGKey
+from data import sample_hierarchical_timeseries
 from jax import numpy as jnp
 from jax import random
 
-from reconcile.data import sample_hierarchical_timeseries
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
 from reconcile.reconcile import ProbabilisticReconciliation
