@@ -1,5 +1,7 @@
 import abc
+from typing import Tuple
 
+import distrax
 from chex import Array, PRNGKey
 
 
@@ -12,7 +14,7 @@ class Forecaster(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def data(self):
+    def data(self) -> Tuple[Array, Array]:
         """
         Returns the data set used for training
 
@@ -26,7 +28,7 @@ class Forecaster(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> Array:
+    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> None:
         """
         Fit the forecaster to data
 
@@ -50,7 +52,9 @@ class Forecaster(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def posterior_predictive(self, rng_key: PRNGKey, xs_test: Array) -> Array:
+    def posterior_predictive(
+        self, rng_key: PRNGKey, xs_test: Array
+    ) -> distrax.Distribution:
         """
         Computes the posterior predictive distribution at some input points
 

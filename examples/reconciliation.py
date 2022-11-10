@@ -17,6 +17,8 @@ from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
 
 
 class GPForecaster(Forecaster):
+    """Example implementation of a forecaster"""
+
     def __init__(self):
         self._models: List = []
         self._xs: Array = None
@@ -24,9 +26,12 @@ class GPForecaster(Forecaster):
 
     @property
     def data(self):
+        """Returns the data"""
         return self._ys, self._xs
 
-    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> None:
+    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array):
+        """Fit a model to each of the time series"""
+
         self._xs = xs
         self._ys = ys
         chex.assert_rank([ys, xs], [3, 3])
@@ -36,10 +41,13 @@ class GPForecaster(Forecaster):
         self._models = [None] * p
         for i in np.arange(p):
             x, y = xs[:, [i], :], ys[:, [i], :]
+            # fit a model for each time series
             learned_params, _, D = self._fit_one(rng_key, x, y)
+            # save the learned parameters and the original data
             self._models[i] = learned_params, D
 
     def _fit_one(self, rng_key, x, y):
+        # here we use GPs to model the time series
         D = gpx.Dataset(X=x.reshape(-1, 1), y=y.reshape(-1, 1))
         sgpr, q, likelihood = self._model(rng_key, D.n)
 
@@ -50,7 +58,7 @@ class GPForecaster(Forecaster):
             objective=negative_elbo,
             parameter_state=parameter_state,
             optax_optim=optimiser,
-            n_iters=20,
+            n_iters=2000,
         )
         learned_params, training_history = inference_state.unpack()
         return learned_params, training_history, D
@@ -69,7 +77,9 @@ class GPForecaster(Forecaster):
         sgpr = gpx.CollapsedVI(posterior=posterior, variational_family=q)
         return sgpr, q, likelihood
 
-    def posterior_predictive(self, rng_key, xs_test: Array) -> Array:
+    def posterior_predictive(self, rng_key, xs_test: Array):
+        """Compute the joint
+        posterior predictive distribution of all timeseries at xs_test"""
         chex.assert_rank(xs_test, 3)
 
         q = xs_test.shape[1]
@@ -84,14 +94,21 @@ class GPForecaster(Forecaster):
             means[i] = predictive_dist.mean()
             cov = jnp.linalg.cholesky(predictive_dist.covariance_matrix)
             covs[i] = cov.reshape((1, *cov.shape))
+
+        # here we stack the means and covariance functions of all
+        # GP models we used
         means = jnp.vstack(means)
         covs = jnp.vstack(covs)
+
+        # here we use a single distrax distribution to model the predictive
+        # posterior of _all_ models
         posterior_predictive = distrax.MultivariateNormalTri(means, covs)
         return posterior_predictive
 
     def predictive_posterior_probability(
         self, rng_key: PRNGKey, ys_test: Array, xs_test: Array
-    ) -> Array:
+    ):
+        """Compute the log predictive posterior probability of an observation"""
         chex.assert_rank([ys_test, xs_test], [3, 3])
         chex.assert_equal_shape([ys_test, xs_test])
 
@@ -117,10 +134,14 @@ def run():
     )
 
     recon = ProbabilisticReconciliation(grouping, forecaster)
-    recon.sample_reconciled_posterior_predictive(
-        random.PRNGKey(1), all_features
+    # do reconciliation via sampling
+    _ = recon.sample_reconciled_posterior_predictive(
+        random.PRNGKey(1), all_features, n_iter=100, n_warmup=50
     )
-    recon.fit_reconciled_posterior_predictive(random.PRNGKey(1), all_features)
+    # do reconciliation via optimization of the energy score
+    _ = recon.fit_reconciled_posterior_predictive(
+        random.PRNGKey(1), all_features, n_samples=100
+    )
 
 
 if __name__ == "__main__":
