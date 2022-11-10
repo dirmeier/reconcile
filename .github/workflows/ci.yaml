@@ -57,4 +57,4 @@ jobs:
           poetry install --without dev
       - name: Run examples
         run: |
-          python examples/reconciliation.py
+          poetry run python examples/reconciliation.py
