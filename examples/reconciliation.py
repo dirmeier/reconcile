@@ -58,7 +58,7 @@ class GPForecaster(Forecaster):
             objective=negative_elbo,
             parameter_state=parameter_state,
             optax_optim=optimiser,
-            n_iters=20,
+            n_iters=2000,
         )
         learned_params, training_history = inference_state.unpack()
         return learned_params, training_history, D
@@ -135,11 +135,11 @@ def run():
 
     recon = ProbabilisticReconciliation(grouping, forecaster)
     # do reconciliation via sampling
-    recon.sample_reconciled_posterior_predictive(
+    _ = recon.sample_reconciled_posterior_predictive(
         random.PRNGKey(1), all_features, n_iter=100, n_warmup=50
     )
     # do reconciliation via optimization of the energy score
-    recon.fit_reconciled_posterior_predictive(
+    _ = recon.fit_reconciled_posterior_predictive(
         random.PRNGKey(1), all_features, n_samples=100
     )
 

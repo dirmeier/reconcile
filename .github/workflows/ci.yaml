@@ -53,7 +53,7 @@ jobs:
           pip install poetry
       - name: Build package
         run: |
-          pip install jaxlib jax
+          pip install jaxlib jax chex
           poetry install --without dev
       - name: Run examples
         run: |
