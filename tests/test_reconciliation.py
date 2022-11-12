@@ -1,18 +1,18 @@
 import chex
+from jax import random
 
 
-def test_grouping_size(grouping):
-    assert grouping.n_groups == 1
+def test_fit_reconciliation(reconciliator):
+    (all_timeseries, all_features), recon = reconciliator
+    fit_recon = recon.fit_reconciled_posterior_predictive(
+        random.PRNGKey(1), all_features, n_samples=100
+    )
+    chex.assert_shape(fit_recon, (100, 5, 100))
 
 
-def test_grouping_colnames(grouping):
-    for e, f in zip(
-        grouping.all_timeseries_column_names(),
-        ["Total", "A", "B", "A:10", "A:20", "B:10", "B:20", "B:30"],
-    ):
-        assert e == f
-
-
-def test_grouping_summing_matrix(grouping):
-    chex.assert_axis_dimension(grouping.summing_matrix().toarray(), 0, 8)
-    chex.assert_axis_dimension(grouping.summing_matrix().toarray(), 1, 5)
+def test_sample_reconciliation(reconciliator):
+    (all_timeseries, all_features), recon = reconciliator
+    fit_recon = recon.sample_reconciled_posterior_predictive(
+        random.PRNGKey(1), all_features, n_warmup=50, n_iter=100
+    )
+    chex.assert_shape(fit_recon, (50, 4, 5, 100))
