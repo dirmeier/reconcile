@@ -63,19 +63,8 @@ def sample_grouped_timeseries():
 
 def sample_hierarchical_timeseries():
     def _group_names():
-        hierarchy = [
-            "A:10:A",
-            "A:10:B",
-            "A:10:C",
-            "A:20:A",
-            "A:20:B",
-            "B:30:A",
-            "B:30:B",
-            "B:30:C",
-            "B:40:A",
-            "B:40:B",
-        ]
+        hierarchy = ["A:10", "A:20", "B:10", "B:20", "B:30"]
 
         return pd.DataFrame.from_dict({"h1": hierarchy})
 
-    return _sample_timeseries(100, 10), _group_names()
+    return _sample_timeseries(100, 5), _group_names()

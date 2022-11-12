@@ -1,7 +1,13 @@
+from itertools import chain
+
 import numpy as np
 import pandas as pd
 from jax import numpy as jnp
 from scipy import sparse
+
+
+def as_list(maybe_list):
+    return maybe_list if isinstance(maybe_list, list) else [maybe_list]
 
 
 class Grouping:
@@ -26,11 +32,24 @@ class Grouping:
         if len(self._group_names) > 1:
             gmat = self._gts_create_g_mat()
             gmat = self._gts_gmat_as_integer(gmat)
+            self._labels = None
         else:
-            out_edges_per_level, _, idxs = self._hts_create_nodes()
+            out_edges_per_level, labels, _ = self._hts_create_nodes()
             gmat = self._hts_create_g_mat(out_edges_per_level)
+            labels = [as_list(labels[key]) for key in sorted(labels.keys())]
+            self._labels = list(chain(*labels))
         self._s_matrix = self._smatrix(gmat)
         self._n_all_timeseries = self._s_matrix.shape[0]
+
+    def all_timeseries_column_names(self):
+        return self._labels
+
+    def bottom_timeseries_column_names(self):
+        return self._labels[self.n_upper_timeseries :]
+
+    @property
+    def n_groups(self):
+        return self._groups.shape[1]
 
     @property
     def n_all_timeseries(self):
@@ -54,10 +73,8 @@ class Grouping:
         return y[:, self.n_upper_timeseries :, :]
 
     def upper_time_series(self, b):
-        sub = self._s_matrix[
-            : (self.n_all_timeseries - self.n_bottom_timeseries), :
-        ].T
-        return jnp.einsum("ijk,jl->ilk", b, sub.toarray())
+        y = self.all_timeseries(b)
+        return y[:, : self.n_upper_timeseries, :]
 
     @staticmethod
     def _paste0(a, b):

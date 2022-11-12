@@ -7,13 +7,17 @@ import jax
 import numpy as np
 import optax
 from chex import Array, PRNGKey
-from data import sample_hierarchical_timeseries
 from jax import numpy as jnp
 from jax import random
+from jax.config import config
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
 from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
+
+from .data import sample_hierarchical_timeseries
+
+config.update("jax_enable_x64", True)
 
 
 class GPForecaster(Forecaster):
@@ -66,7 +70,7 @@ class GPForecaster(Forecaster):
     @staticmethod
     def _model(rng_key, n):
         z = random.uniform(rng_key, (20, 1))
-        prior = gpx.Prior(kernel=gpx.RBF())
+        prior = gpx.Prior(mean_function=gpx.Constant(), kernel=gpx.RBF())
         likelihood = gpx.Gaussian(num_datapoints=n)
         posterior = prior * likelihood
         q = gpx.CollapsedVariationalGaussian(
@@ -113,11 +117,8 @@ class GPForecaster(Forecaster):
         chex.assert_equal_shape([ys_test, xs_test])
 
         preds = self.posterior_predictive(rng_key, xs_test)
-        y_test_pred = jnp.zeros(ys_test.shape[1])
-        for i, pred in enumerate(preds):
-            lp = preds[i].log_prob(jnp.squeeze(ys_test[:, i, :]))
-            y_test_pred.at[i].set(lp)
-        return jnp.asarray(y_test_pred)
+        lp = preds.log_prob(ys_test)
+        return lp
 
 
 def run():
