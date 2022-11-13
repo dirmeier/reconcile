@@ -153,3 +153,6 @@ cython_debug/
 
 # vscode
 .vscode/
+
+# dont att poetry lock to package
+poetry.lock

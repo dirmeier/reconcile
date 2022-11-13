@@ -7,13 +7,16 @@ import jax
 import numpy as np
 import optax
 from chex import Array, PRNGKey
-from data import sample_hierarchical_timeseries
 from jax import numpy as jnp
 from jax import random
+from jax.config import config
 
+from reconcile.data import sample_hierarchical_timeseries
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
 from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
+
+config.update("jax_enable_x64", True)
 
 
 class GPForecaster(Forecaster):
@@ -29,7 +32,7 @@ class GPForecaster(Forecaster):
         """Returns the data"""
         return self._ys, self._xs
 
-    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array):
+    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array, niter=2000):
         """Fit a model to each of the time series"""
 
         self._xs = xs
@@ -42,11 +45,11 @@ class GPForecaster(Forecaster):
         for i in np.arange(p):
             x, y = xs[:, [i], :], ys[:, [i], :]
             # fit a model for each time series
-            learned_params, _, D = self._fit_one(rng_key, x, y)
+            learned_params, _, D = self._fit_one(rng_key, x, y, niter)
             # save the learned parameters and the original data
             self._models[i] = learned_params, D
 
-    def _fit_one(self, rng_key, x, y):
+    def _fit_one(self, rng_key, x, y, niter):
         # here we use GPs to model the time series
         D = gpx.Dataset(X=x.reshape(-1, 1), y=y.reshape(-1, 1))
         sgpr, q, likelihood = self._model(rng_key, D.n)
@@ -58,7 +61,7 @@ class GPForecaster(Forecaster):
             objective=negative_elbo,
             parameter_state=parameter_state,
             optax_optim=optimiser,
-            n_iters=2000,
+            n_iters=niter,
         )
         learned_params, training_history = inference_state.unpack()
         return learned_params, training_history, D
@@ -66,7 +69,7 @@ class GPForecaster(Forecaster):
     @staticmethod
     def _model(rng_key, n):
         z = random.uniform(rng_key, (20, 1))
-        prior = gpx.Prior(kernel=gpx.RBF())
+        prior = gpx.Prior(mean_function=gpx.Constant(), kernel=gpx.RBF())
         likelihood = gpx.Gaussian(num_datapoints=n)
         posterior = prior * likelihood
         q = gpx.CollapsedVariationalGaussian(
@@ -113,11 +116,8 @@ class GPForecaster(Forecaster):
         chex.assert_equal_shape([ys_test, xs_test])
 
         preds = self.posterior_predictive(rng_key, xs_test)
-        y_test_pred = jnp.zeros(ys_test.shape[1])
-        for i, pred in enumerate(preds):
-            lp = preds[i].log_prob(jnp.squeeze(ys_test[:, i, :]))
-            y_test_pred.at[i].set(lp)
-        return jnp.asarray(y_test_pred)
+        lp = preds.log_prob(ys_test)
+        return lp
 
 
 def run():
@@ -127,10 +127,10 @@ def run():
     all_features = jnp.tile(x, [1, all_timeseries.shape[1], 1])
 
     forecaster = GPForecaster()
-    forecaster.fit(random.PRNGKey(1), all_timeseries, all_features)
-    forecaster.posterior_predictive(random.PRNGKey(1), all_features)
-    forecaster.predictive_posterior_probability(
-        random.PRNGKey(1), all_timeseries, all_features
+    forecaster.fit(
+        random.PRNGKey(1),
+        all_timeseries[:, :, :90],
+        all_features[:, :, :90],
     )
 
     recon = ProbabilisticReconciliation(grouping, forecaster)
