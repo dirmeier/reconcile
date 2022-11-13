@@ -11,11 +11,10 @@ from jax import numpy as jnp
 from jax import random
 from jax.config import config
 
+from reconcile.data import sample_hierarchical_timeseries
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
 from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
-
-from .data import sample_hierarchical_timeseries
 
 config.update("jax_enable_x64", True)
 

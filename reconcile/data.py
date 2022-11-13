@@ -19,6 +19,16 @@ def _sample_timeseries(N, D):
 
 
 def sample_grouped_timeseries():
+    """
+    Sample a grouped timeseries from an ARMA
+
+    Returns
+    -------
+    Tuple
+        a tuple where the first element is a matrix of time series measurements
+        and the second one is a pd.DataFrame of groups
+    """
+
     def _group_names():
         group_one = [
             "VIC:Mel",
@@ -62,6 +72,16 @@ def sample_grouped_timeseries():
 
 
 def sample_hierarchical_timeseries():
+    """
+    Sample a hierarchical timeseries from an ARMA
+
+    Returns
+    -------
+    Tuple
+        a tuple where the first element is a matrix of time series measurements
+        and the second one is a pd.DataFrame of groups
+    """
+
     def _group_names():
         hierarchy = ["A:10", "A:20", "B:10", "B:20", "B:30"]
 

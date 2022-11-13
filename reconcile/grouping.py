@@ -1,3 +1,4 @@
+import warnings
 from itertools import chain
 
 import numpy as np
@@ -30,6 +31,7 @@ class Grouping:
         self._group_names = list(groups.columns)
 
         if len(self._group_names) > 1:
+            warnings.warn("Grouped timeseries is poorly tested. Use with care!")
             gmat = self._gts_create_g_mat()
             gmat = self._gts_gmat_as_integer(gmat)
             self._labels = None

@@ -2,9 +2,9 @@ import pytest
 from jax import numpy as jnp
 from jax import random
 
-from examples.data import sample_hierarchical_timeseries
 from examples.reconciliation import GPForecaster
 from reconcile import ProbabilisticReconciliation
+from reconcile.data import sample_hierarchical_timeseries
 from reconcile.grouping import Grouping
 
 
