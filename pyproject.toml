@@ -31,6 +31,7 @@ isort = "^5.10.1"
 mypy = "^0.971"
 bandit = "^1.7.4"
 gpjax = "^0.5.0"
+pytest = "^7.2.0"
 
 [tool.poetry.group.examples.dependencies]
 gpjax = "^0.5.0"
