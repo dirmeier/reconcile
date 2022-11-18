@@ -1,9 +1,10 @@
 [tool.poetry]
-name = "reconcile"
+name = "probabilistic-reconciliation"
 version = "0.0.1"
 description = "Probabilistic reconciliation of time series forecasts"
-authors = ["Simon Dirmeier <sfyrbnd @ pm me>"]
+authors = ["Simon Dirmeier <sfyrbnd@pm.me>"]
 readme = "README.md"
+packages = [{include = "reconcile"}]
 
 
 [build-system]
