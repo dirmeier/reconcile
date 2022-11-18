@@ -135,9 +135,9 @@ def run():
 
     recon = ProbabilisticReconciliation(grouping, forecaster)
     # do reconciliation via sampling
-    _ = recon.sample_reconciled_posterior_predictive(
-        random.PRNGKey(1), all_features, n_iter=100, n_warmup=50
-    )
+    # _ = recon.sample_reconciled_posterior_predictive(
+    #     random.PRNGKey(1), all_features, n_iter=100, n_warmup=50
+    # )
     # do reconciliation via optimization of the energy score
     _ = recon.fit_reconciled_posterior_predictive(
         random.PRNGKey(1), all_features, n_samples=100

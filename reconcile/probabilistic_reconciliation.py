@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 
 import blackjax
 import jax
@@ -124,6 +125,7 @@ class ProbabilisticReconciliation:
         rng_key: PRNGKey,
         xs_test: Array,
         n_samples=2000,
+        net: Callable = None,
     ):
         """
         Probabilistic reconciliation using energy score optimization
@@ -144,6 +146,8 @@ class ProbabilisticReconciliation:
             original training data
         n_samples: int
             number of samples to return
+        net: Callable
+            a flax neural network that is used for the projection
 
         Returns
         -------
@@ -163,11 +167,19 @@ class ProbabilisticReconciliation:
                 @nn.compact
                 def __call__(self, x: Array):
                     x = x.swapaxes(-2, -1)
-                    x = nn.Dense(features=output_dim)(x)
+                    x = nn.Sequential(
+                        [
+                            nn.Dense(output_dim * 2),
+                            nn.gelu,
+                            nn.Dense(output_dim * 2),
+                            nn.gelu,
+                            nn.Dense(output_dim),
+                        ]
+                    )(x)
                     x = x.swapaxes(-2, -1)
                     return x
 
-            return _network()
+            return _network() if net is None else net()
 
         def _loss(y: Array, y_reconciled_0: Array, y_reconciled_1: Array):
             y = y.reshape((1, *y.shape))

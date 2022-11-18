@@ -1,9 +1,10 @@
 [tool.poetry]
-name = "reconcile"
+name = "probabilistic-reconciliation"
 version = "0.0.1"
 description = "Probabilistic reconciliation of time series forecasts"
-authors = ["Simon Dirmeier <sfyrbnd @ pm me>"]
+authors = ["Simon Dirmeier <sfyrbnd@pm.me>"]
 readme = "README.md"
+packages = [{include = "reconcile"}]
 
 
 [build-system]
@@ -32,6 +33,7 @@ mypy = "^0.971"
 bandit = "^1.7.4"
 gpjax = "^0.5.0"
 pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
 
 [tool.poetry.group.examples.dependencies]
 gpjax = "^0.5.0"
