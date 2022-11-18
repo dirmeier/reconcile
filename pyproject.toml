@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "probabilistic-reconciliation"
-version = "0.0.1"
+version = "0.0.2"
 description = "Probabilistic reconciliation of time series forecasts"
 authors = ["Simon Dirmeier <sfyrbnd@pm.me>"]
 readme = "README.md"
