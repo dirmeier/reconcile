@@ -12,8 +12,8 @@
 
 Reconcile implements probabilistic time series forecast reconciliation methods introduced in
 
-1) Zambon, Lorenzo, Dario Azzimonti, and Giorgio Corani. "Probabilistic reconciliation of forecasts via importance sampling." arXiv preprint arXiv:2210.02286 (2022).
-2) Panagiotelis, Anastasios, et al. "Probabilistic forecast reconciliation: Properties, evaluation and score optimisation." European Journal of Operational Research (2022).
+1) Zambon, Lorenzo, Dario Azzimonti, and Giorgio Corani. ["Probabilistic reconciliation of forecasts via importance sampling."](https://doi.org/10.48550/arXiv.2210.02286) arXiv preprint arXiv:2210.02286 (2022).
+2) Panagiotelis, Anastasios, et al. ["Probabilistic forecast reconciliation: Properties, evaluation and score optimisation."](https://doi.org/10.1016/j.ejor.2022.07.040) European Journal of Operational Research (2022).
 
 The package implements
 
