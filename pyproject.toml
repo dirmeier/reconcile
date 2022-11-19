@@ -1,9 +1,20 @@
 [tool.poetry]
 name = "probabilistic-reconciliation"
-version = "0.0.2"
+version = "0.0.3"
 description = "Probabilistic reconciliation of time series forecasts"
 authors = ["Simon Dirmeier <sfyrbnd@pm.me>"]
 readme = "README.md"
+license = "Apache-2.0"
+homepage = "https://github.com/dirmeier/reconcile"
+keywords = ["probabilistic reconciliation", "forecasting", "timeseries", "hierarchical time series"]
+classifiers=[
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
 packages = [{include = "reconcile"}]
 
 
