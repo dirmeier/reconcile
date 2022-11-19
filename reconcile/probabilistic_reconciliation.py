@@ -148,7 +148,8 @@ class ProbabilisticReconciliation:
         n_samples: int
             number of samples to return
         net: Callable
-            a flax neural network that is used for the projection
+            a flax neural network that is used for the projection or None to use
+            the linear projection from [1]
         n_iter: int
             number of iterations to train the network or None for early stopping
 
