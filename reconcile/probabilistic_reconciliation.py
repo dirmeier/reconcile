@@ -126,6 +126,7 @@ class ProbabilisticReconciliation:
         xs_test: Array,
         n_samples=2000,
         net: Callable = None,
+        n_iter: int = None,
     ):
         """
         Probabilistic reconciliation using energy score optimization
@@ -148,6 +149,8 @@ class ProbabilisticReconciliation:
             number of samples to return
         net: Callable
             a flax neural network that is used for the projection
+        n_iter: int
+            number of iterations to train the network or None for early stopping
 
         Returns
         -------
@@ -221,6 +224,7 @@ class ProbabilisticReconciliation:
 
         batch_size = 64
         early_stop = EarlyStopping(min_delta=0.1, patience=5)
+        itr = 0
         while True:
             sample_key, epoch_key, rng_key = random.split(rng_key, 3)
             y_predictive_batch = predictive.sample(
@@ -230,9 +234,12 @@ class ProbabilisticReconciliation:
             state, loss = _step(state, epoch_key, ys, y_predictive_batch)
             logger.info("Loss after batch update %d", loss)
             _, early_stop = early_stop.update(loss)
-            if early_stop.should_stop:
+            if early_stop.should_stop and n_iter is None:
                 logger.info("Met early stopping criteria, breaking...")
                 break
+            elif n_iter is not None and itr == n_iter:
+                break
+            itr += 1
 
         predictive = self._forecaster.posterior_predictive(rng_key, xs_test)
         y_predictive = predictive.sample(
