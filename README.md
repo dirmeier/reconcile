@@ -21,12 +21,16 @@ The package implements
 - an abstract base forecasting class,
 - reconciliation methods for forecasts based on sampling and optimization
 
-An example application can be found in `examples/reconciliation.py`
+An example application can be found in `examples/reconciliation.py` and
+a **case study on probabilistic forecast reconciliation of stock index data**
+can be found [here](https://dirmeier.github.io/etudes/probabilistic_reconciliation.html).
 
 ## Installation
 
+Make sure to have a working `JAX` installation. Depending whether you want to use CPU/GPU/TPU,
+please follow [these instructions](https://github.com/google/jax#installation).
 
-To install from PyPI, call:
+To install the package from PyPI, call:
 
 ```bash
 pip install probabilistic-reconciliation
