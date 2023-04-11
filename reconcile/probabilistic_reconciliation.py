@@ -17,6 +17,7 @@ from reconcile.grouping import Grouping
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-arguments,too-many-locals,arguments-differ
 class ProbabilisticReconciliation:
     """
     Probabilistic reconcilation of hierarchical time series class
@@ -82,6 +83,9 @@ class ProbabilisticReconciliation:
             )
             return jnp.sum(lp)
 
+        def lp(x):
+            return _logprob_fn(**x)
+
         curr_key, rng_key = random.split(rng_key, 2)
         initial_positions = self._forecaster.posterior_predictive(
             curr_key,
@@ -91,17 +95,14 @@ class ProbabilisticReconciliation:
             "b": self._grouping.extract_bottom_timeseries(initial_positions)
         }
 
-        curr_keys, rng_key = random.split(rng_key)
-        warmup = blackjax.window_adaptation(
-            blackjax.nuts,
-            lambda x: _logprob_fn(**x),
-            n_warmup,
-        )
-        initial_states = jax.vmap(
+        init_keys = random.split(rng_key, n_chains)
+        warmup = blackjax.window_adaptation(blackjax.nuts, lp)
+        initial_states, kernel_params = jax.vmap(
             lambda seed, param: warmup.run(seed, param)[0]
-        )(random.split(curr_keys, n_chains), initial_positions)
-        warmup_init = {"b": initial_positions["b"][0]}
-        _, kernel, _ = warmup.run(rng_key, warmup_init)
+        )(init_keys, initial_positions)
+
+        kernel_params = {k: v[0] for k, v in kernel_params.items()}
+        _, kernel = blackjax.nuts(lp, **kernel_params)
 
         def _inference_loop(rng_key, kernel, initial_state, num_samples):
             @jax.jit
@@ -196,7 +197,7 @@ class ProbabilisticReconciliation:
             loss = jnp.sum(loss, axis=-1)
             return loss
 
-        def _step(state, epoch_key, y_batched, y_predictive_batched):
+        def _step(state, y_batched, y_predictive_batched):
             def loss_fn(params):
                 b_reconciled_pred = state.apply_fn(params, y_predictive_batched)
                 y_reconciled_pred = self._grouping.all_timeseries(
@@ -227,18 +228,18 @@ class ProbabilisticReconciliation:
         early_stop = EarlyStopping(min_delta=0.1, patience=5)
         itr = 0
         while True:
-            sample_key, epoch_key, rng_key = random.split(rng_key, 3)
+            sample_key, rng_key = random.split(rng_key)
             y_predictive_batch = predictive.sample(
                 seed=sample_key,
                 sample_shape=(batch_size, 2),
             )
-            state, loss = _step(state, epoch_key, ys, y_predictive_batch)
+            state, loss = _step(state, ys, y_predictive_batch)
             logger.info("Loss after batch update %d", loss)
             _, early_stop = early_stop.update(loss)
             if early_stop.should_stop and n_iter is None:
                 logger.info("Met early stopping criteria, breaking...")
                 break
-            elif n_iter is not None and itr == n_iter:
+            if n_iter is not None and itr == n_iter:
                 break
             itr += 1
 

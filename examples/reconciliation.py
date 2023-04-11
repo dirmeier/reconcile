@@ -62,7 +62,7 @@ class GPForecaster(Forecaster):
             objective=negative_elbo,
             parameter_state=parameter_state,
             optax_optim=optimiser,
-            n_iters=niter,
+            num_iters=niter,
         )
         learned_params, training_history = inference_state.unpack()
         return learned_params, training_history, D
