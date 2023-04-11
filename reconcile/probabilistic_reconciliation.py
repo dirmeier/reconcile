@@ -83,7 +83,8 @@ class ProbabilisticReconciliation:
             )
             return jnp.sum(lp)
 
-        lp__ = lambda x: _logprob_fn(**x)
+        def lp(x):
+            return _logprob_fn(**x)
 
         curr_key, rng_key = random.split(rng_key, 2)
         initial_positions = self._forecaster.posterior_predictive(
@@ -95,13 +96,13 @@ class ProbabilisticReconciliation:
         }
 
         init_keys = random.split(rng_key, n_chains)
-        warmup = blackjax.window_adaptation(blackjax.nuts, lp__)
+        warmup = blackjax.window_adaptation(blackjax.nuts, lp)
         initial_states, kernel_params = jax.vmap(
             lambda seed, param: warmup.run(seed, param)[0]
         )(init_keys, initial_positions)
 
         kernel_params = {k: v[0] for k, v in kernel_params.items()}
-        _, kernel = blackjax.nuts(lp__, **kernel_params)
+        _, kernel = blackjax.nuts(lp, **kernel_params)
 
         def _inference_loop(rng_key, kernel, initial_state, num_samples):
             @jax.jit

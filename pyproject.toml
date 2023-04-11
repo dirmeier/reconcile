@@ -54,7 +54,7 @@ dependencies = [
 
 [tool.hatch.envs.test.scripts]
 lint = 'pylint reconcile'
-test = 'pytest -v --doctest-modules --cov=./sbi --cov-report=xml reconcile'
+test = 'pytest -v --doctest-modules --cov=./reconcile --cov-report=xml reconcile'
 
 [tool.hatch.envs.examples]
 dependencies = [
