@@ -1,8 +1,10 @@
+# pylint: skip-file
+
 import chex
 
 
 def test_grouping_size(grouping):
-    assert grouping.n_groups == 1
+    chex.assert_equal(grouping.n_groups, 1)
 
 
 def test_grouping_colnames(grouping):
@@ -10,7 +12,7 @@ def test_grouping_colnames(grouping):
         grouping.all_timeseries_column_names(),
         ["Total", "A", "B", "A:10", "A:20", "B:10", "B:20", "B:30"],
     ):
-        assert e == f
+        chex.assert_equal(e, f)
 
 
 def test_grouping_summing_matrix(grouping):

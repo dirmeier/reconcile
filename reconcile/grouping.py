@@ -7,10 +7,12 @@ from jax import numpy as jnp
 from scipy import sparse
 
 
+# pylint: disable=missing-function-docstring
 def as_list(maybe_list):
     return maybe_list if isinstance(maybe_list, list) else [maybe_list]
 
 
+# pylint: disable=missing-function-docstring,too-many-locals,unnecessary-comprehension  # noqa: E501
 class Grouping:
     """
     Class that represents a grouping/hierarchy of a grouped or hierarchical

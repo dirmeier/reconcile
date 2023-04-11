@@ -12,6 +12,9 @@ class Forecaster(metaclass=abc.ABCMeta):
     Needs to be inherited for using a custom forecaster
     """
 
+    def __init__(self):
+        pass
+
     @property
     @abc.abstractmethod
     def data(self) -> Tuple[Array, Array]:
@@ -25,7 +28,6 @@ class Forecaster(metaclass=abc.ABCMeta):
             element are the time series (Y), and the second element are the
             features (X)
         """
-        pass
 
     @abc.abstractmethod
     def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> None:
@@ -49,7 +51,6 @@ class Forecaster(metaclass=abc.ABCMeta):
             and the last axis (N) are the time points for which measurements
             are taken
         """
-        pass
 
     @abc.abstractmethod
     def posterior_predictive(
@@ -76,7 +77,6 @@ class Forecaster(metaclass=abc.ABCMeta):
             shape (,M), such that a single sample has shape (P, M) and
             multiple samples have shape (S, P, M)
         """
-        pass
 
     @abc.abstractmethod
     def predictive_posterior_probability(
@@ -108,4 +108,3 @@ class Forecaster(metaclass=abc.ABCMeta):
             returns a chex Array of size P with the log predictive probability
             of the data given a fit
         """
-        pass

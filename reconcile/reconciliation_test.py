@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 import chex
 from jax import random
 
