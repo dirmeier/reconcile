@@ -15,15 +15,12 @@ Reconcile implements probabilistic time series forecast reconciliation methods i
 1) Zambon, Lorenzo, Dario Azzimonti, and Giorgio Corani. ["Probabilistic reconciliation of forecasts via importance sampling."](https://doi.org/10.48550/arXiv.2210.02286) arXiv preprint arXiv:2210.02286 (2022).
 2) Panagiotelis, Anastasios, et al. ["Probabilistic forecast reconciliation: Properties, evaluation and score optimisation."](https://doi.org/10.1016/j.ejor.2022.07.040) European Journal of Operational Research (2022).
 
-The package implements
+The package implements methods to compute summing/aggregation matrices for grouped and hierarchical time series and reconciliation methods for probabilistic forecasts based on sampling and optimization, 
+and in the near future also some recent forecasting methods, such as proposed in [Benavoli, *et al.* (2021)](https://doi.org/10.1007/978-3-030-91445-5_2) or [Corani *et al.*, (2020)](https://arxiv.org/abs/2009.08102) via [GPJax](https://github.com/JaxGaussianProcesses/GPJax). 
 
-- methods to compute summing/aggregation matrices for grouped and hierarchical time series,
-- an abstract base forecasting class,
-- reconciliation methods for forecasts based on sampling and optimization
+## Examples
 
-An example application can be found in `examples/reconciliation.py` and
-a **case study on probabilistic forecast reconciliation of stock index data**
-can be found [here](https://dirmeier.github.io/etudes/probabilistic_reconciliation.html).
+An example timeseries forecast application using GPs can be found in `examples/reconciliation.py` and a **case study on probabilistic forecast reconciliation of stock index data** can be found [here](https://dirmeier.github.io/etudes/probabilistic_reconciliation.html).
 
 ## Installation
 
