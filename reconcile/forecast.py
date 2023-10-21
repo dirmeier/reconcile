@@ -16,7 +16,6 @@ class Forecaster(metaclass=abc.ABCMeta):
 
     def __init__(self):
         """Construct a forecaster."""
-        pass
 
     @property
     @abc.abstractmethod

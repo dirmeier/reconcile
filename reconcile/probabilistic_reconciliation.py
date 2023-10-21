@@ -11,7 +11,7 @@ from flax import linen as nn
 from flax.training.early_stopping import EarlyStopping
 from flax.training.train_state import TrainState
 from jax import numpy as jnp
-from jax import random
+from jax import random as jr
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
@@ -77,7 +77,7 @@ class ProbabilisticReconciliation:
         def lp(x):
             return _logprob_fn(**x)
 
-        curr_key, rng_key = random.split(rng_key, 2)
+        curr_key, rng_key = jr.split(rng_key, 2)
         initial_positions = self._forecaster.posterior_predictive(
             curr_key,
             xs_test,
@@ -86,7 +86,7 @@ class ProbabilisticReconciliation:
             "b": self._grouping.extract_bottom_timeseries(initial_positions)
         }
 
-        init_keys = random.split(rng_key, n_chains)
+        init_keys = jr.split(rng_key, n_chains)
         warmup = blackjax.window_adaptation(blackjax.nuts, lp)
         initial_states, kernel_params = jax.vmap(
             lambda seed, param: warmup.run(seed, param)[0]
@@ -98,11 +98,11 @@ class ProbabilisticReconciliation:
         def _inference_loop(rng_key, kernel, initial_state, num_samples):
             @jax.jit
             def _step(states, rng_key):
-                keys = jax.random.split(rng_key, n_chains)
+                keys = jr.split(rng_key, n_chains)
                 states, infos = jax.vmap(kernel)(keys, states)
                 return states, (states, infos)
 
-            curr_keys = jax.random.split(rng_key, num_samples)
+            curr_keys = jr.split(rng_key, num_samples)
             _, (states, _) = jax.lax.scan(_step, initial_state, curr_keys)
             return states
 
@@ -210,7 +210,7 @@ class ProbabilisticReconciliation:
         early_stop = EarlyStopping(min_delta=0.1, patience=5)
         itr = 0
         while True:
-            sample_key, rng_key = random.split(rng_key)
+            sample_key, rng_key = jr.split(rng_key)
             y_predictive_batch = predictive.sample(
                 seed=sample_key,
                 sample_shape=(batch_size, 2),
