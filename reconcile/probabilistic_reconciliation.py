@@ -1,3 +1,5 @@
+"""Probabilistic reconciliation module."""
+
 import logging
 from typing import Callable
 
@@ -19,11 +21,10 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-locals,arguments-differ
 class ProbabilisticReconciliation:
-    """
-    Probabilistic reconcilation of hierarchical time series class
-    """
+    """Probabilistic reconcilation of hierarchical time series class."""
 
     def __init__(self, grouping: Grouping, forecaster: Forecaster):
+        """Construct a ProbabilisticReconciliation object."""
         self._forecaster = forecaster
         self._grouping = grouping
 
@@ -35,41 +36,31 @@ class ProbabilisticReconciliation:
         n_iter=2000,
         n_warmup=1000,
     ):
-        """
-        Probabilistic reconciliation using Markov Chain Monte Carlo
+        """Probabilistic reconciliation using Markov Chain Monte Carlo.
 
         Compute the reconciled bottom time series forecast by sampling from
         the joint density of bottom and upper predictive
         densities. The implementation and method loosely follow [1]_ but
         is not the same method (!).
 
-        Parameters
-        ----------
-        rng_key: chex.PRNGKey
-            a key for random number generation
-        xs_test: chex.Array
-            a (1 x P x N)-dimensional array of time points where
-            the second axis (P) corresponds to the different time series
-            and the last axis (N) are the time points for which predictions
-            are made. The second axis, P, needs to have as many elements as the
-            original training data
-        n_chains: int
-            number of chains to sample from
-        n_iter: int
-            number of samples to take per chain
-        n_warmup: int
-            number of samples to discard as burn-in from the chain
+        Args:
+            rng_key: a key for random number generation
+            xs_test: a (1 x P x N)-dimensional array of time points where
+                the second axis (P) corresponds to the different time series
+                and the last axis (N) are the time points for which predictions
+                are made. The second axis, P, needs to have as many elements as
+                the original training data
+            n_chains: number of chains to sample from
+            n_iter: number of samples to take per chain
+            n_warmup: number of samples to discard as burn-in from the chain
 
-        Returns
-        -------
-        chex.Array
+        Returns:
             returns a posterior sample of shape (n_iter x n_chains x P x N)
             representing the reconciled bottom time series forecast
 
-        References
-        ----------
-        .. [1] Zambon, Lorenzo, et al. "Probabilistic reconciliation of
-               forecasts via importance sampling." arXiv:2210.02286 (2022).
+        References:
+            .. [1] Zambon, Lorenzo, et al. "Probabilistic reconciliation of
+                forecasts via importance sampling." arXiv:2210.02286 (2022).
         """
 
         def _logprob_fn(b):
@@ -129,42 +120,33 @@ class ProbabilisticReconciliation:
         net: Callable = None,
         n_iter: int = None,
     ):
-        """
-        Probabilistic reconciliation using energy score optimization
+        """Probabilistic reconciliation using energy score optimization.
 
         Compute the reconciled bottom time series forecast by optimization of
         an energy score. The implementation and method loosely follow [1]_ but
         is not the exactly same method.
 
-        Parameters
-        ----------
-        rng_key: chex.PRNGKey
-            a key for random number generation
-        xs_test: chex.Array
-            a (1 x P x N)-dimensional array of time points where
-            the second axis (P) corresponds to the different time series
-            and the last axis (N) are the time points for which predictions
-            are made. The second axis, P, needs to have as many elements as the
-            original training data
-        n_samples: int
-            number of samples to return
-        net: Callable
-            a flax neural network that is used for the projection or None to use
-            the linear projection from [1]
-        n_iter: int
-            number of iterations to train the network or None for early stopping
+        Args:
+            rng_key: a key for random number generation
+            xs_test: a (1 x P x N)-dimensional array of time points where
+                the second axis (P) corresponds to the different time series
+                and the last axis (N) are the time points for which predictions
+                are made. The second axis, P, needs to have as many elements as
+                the original training data
+            n_samples: number of samples to return
+            net: a flax neural network that is used for the projection or None
+                to use the linear projection from [1]
+            n_iter: number of iterations to train the network or None for
+            early stopping
 
-        Returns
-        -------
-        chex.Array
+        Returns:
             returns a posterior sample of shape (n_samples x P x N)
             representing the reconciled bottom time series forecast
 
-        References
-        ----------
-        .. [1] Panagiotelis, Anastasios, et al. "Probabilistic forecast
-               reconciliation: Properties, evaluation and score optimisation."
-               European Journal of Operational Research (2022).
+        References:
+            .. [1] Panagiotelis, Anastasios, et al. "Probabilistic forecast
+                reconciliation: Properties, evaluation and score
+                optimisation." European Journal of Operational Research (2022).
         """
 
         def _projection(output_dim):

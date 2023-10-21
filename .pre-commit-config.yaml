@@ -40,6 +40,8 @@ repos:
     language: python
     language_version: python3
     types: [python]
+    args: ["-c", "pyproject.toml"]
+    additional_dependencies: ["toml"]
     files: "(reconcile|examples)"
 
 - repo: https://github.com/PyCQA/flake8
@@ -59,7 +61,13 @@ repos:
     files: "(reconcile|examples)"
 
 - repo: https://github.com/jorisroovers/gitlint
-  rev: v0.18.0
+  rev: v0.19.1
   hooks:
-    - id: gitlint
-    - id: gitlint-ci
+  - id: gitlint
+  - id: gitlint-ci
+
+- repo: https://github.com/pycqa/pydocstyle
+  rev: 6.1.1
+  hooks:
+  - id: pydocstyle
+    additional_dependencies: ["toml"]
