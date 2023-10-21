@@ -2,8 +2,6 @@
 
 [![status](http://www.repostatus.org/badges/latest/concept.svg)](http://www.repostatus.org/#concept)
 [![ci](https://github.com/dirmeier/reconcile/actions/workflows/ci.yaml/badge.svg)](https://github.com/dirmeier/reconcile/actions/workflows/ci.yaml)
-[![codacy badge](https://app.codacy.com/project/badge/Grade/f0a254348e894c7c85b4e979bc81f1d9)](https://www.codacy.com/gh/dirmeier/reconcile/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dirmeier/reconcile&amp;utm_campaign=Badge_Grade)
-[![codacy badge](https://app.codacy.com/project/badge/Coverage/f0a254348e894c7c85b4e979bc81f1d9)](https://www.codacy.com/gh/dirmeier/reconcile/dashboard?utm_source=github.com&utm_medium=referral&utm_content=dirmeier/reconcile&utm_campaign=Badge_Coverage)
 [![version](https://img.shields.io/pypi/v/probabilistic-reconciliation.svg?colorB=black&style=flat)](https://pypi.org/project/probabilistic-reconciliation/)
 
 > Probabilistic reconciliation of time series forecasts
@@ -15,8 +13,8 @@ Reconcile implements probabilistic time series forecast reconciliation methods i
 1) Zambon, Lorenzo, Dario Azzimonti, and Giorgio Corani. ["Probabilistic reconciliation of forecasts via importance sampling."](https://doi.org/10.48550/arXiv.2210.02286) arXiv preprint arXiv:2210.02286 (2022).
 2) Panagiotelis, Anastasios, et al. ["Probabilistic forecast reconciliation: Properties, evaluation and score optimisation."](https://doi.org/10.1016/j.ejor.2022.07.040) European Journal of Operational Research (2022).
 
-The package implements methods to compute summing/aggregation matrices for grouped and hierarchical time series and reconciliation methods for probabilistic forecasts based on sampling and optimization, 
-and in the near future also some recent forecasting methods, such as proposed in [Benavoli, *et al.* (2021)](https://doi.org/10.1007/978-3-030-91445-5_2) or [Corani *et al.*, (2020)](https://arxiv.org/abs/2009.08102) via [GPJax](https://github.com/JaxGaussianProcesses/GPJax). 
+The package implements methods to compute summing/aggregation matrices for grouped and hierarchical time series and reconciliation methods for probabilistic forecasts based on sampling and optimization,
+and in the near future also some recent forecasting methods, such as proposed in [Benavoli, *et al.* (2021)](https://doi.org/10.1007/978-3-030-91445-5_2) or [Corani *et al.*, (2020)](https://arxiv.org/abs/2009.08102) via [GPJax](https://github.com/JaxGaussianProcesses/GPJax).
 
 ## Examples
 

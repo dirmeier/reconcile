@@ -1,3 +1,6 @@
+"""Grouping module."""
+
+
 import warnings
 from itertools import chain
 
@@ -8,26 +11,20 @@ from scipy import sparse
 
 
 # pylint: disable=missing-function-docstring
-def as_list(maybe_list):
+def _as_list(maybe_list):
     return maybe_list if isinstance(maybe_list, list) else [maybe_list]
 
 
 # pylint: disable=missing-function-docstring,too-many-locals,unnecessary-comprehension  # noqa: E501
 class Grouping:
-    """
-    Class that represents a grouping/hierarchy of a grouped or hierarchical
-    time series
-    """
+    """Class that represents a grouping/hierarchy of a time series."""
 
     def __init__(self, groups: pd.DataFrame):
-        """
-        Initialize a grouping
+        """Initialize a grouping.
 
-        Parameters
-        ----------
-        groups: pd.DataFrame
+        Args:
+            groups: pd.DataFrame
         """
-
         self._p = groups.shape[0]
         self._groups = groups
         self._group_names = list(groups.columns)
@@ -40,43 +37,53 @@ class Grouping:
         else:
             out_edges_per_level, labels, _ = self._hts_create_nodes()
             gmat = self._hts_create_g_mat(out_edges_per_level)
-            labels = [as_list(labels[key]) for key in sorted(labels.keys())]
+            labels = [_as_list(labels[key]) for key in sorted(labels.keys())]
             self._labels = list(chain(*labels))
         self._s_matrix = self._smatrix(gmat)
         self._n_all_timeseries = self._s_matrix.shape[0]
 
     def all_timeseries_column_names(self):
+        """Getter for column names of all time series."""
         return self._labels
 
     def bottom_timeseries_column_names(self):
+        """Getter for column names of bottom time series."""
         return self._labels[self.n_upper_timeseries :]
 
     @property
     def n_groups(self):
+        """Getter for number of groups."""
         return self._groups.shape[1]
 
     @property
     def n_all_timeseries(self):
+        """Getter for number of all time series."""
         return self._n_all_timeseries
 
     @property
     def n_bottom_timeseries(self):
+        """Getter for number of bottom time series."""
         return self._p
 
     @property
     def n_upper_timeseries(self):
+        """Getter for number of upper time series."""
         return self.n_all_timeseries - self.n_bottom_timeseries
 
     def all_timeseries(self, b: jnp.ndarray):
+        """Getter for all time series."""
         return jnp.einsum("...ijk,jl->...ilk", b, self._s_matrix.T.toarray())
 
     def summing_matrix(self):
+        """Getter for the summing matrix."""
         return self._s_matrix
 
     def extract_bottom_timeseries(self, y):
+        """Getter for the bottom time series."""
         return y[:, self.n_upper_timeseries :, :]
 
     def upper_time_series(self, b):
+        """Getter for upper time series."""
         y = self.all_timeseries(b)
         return y[:, : self.n_upper_timeseries, :]
 
@@ -85,11 +92,11 @@ class Grouping:
         return np.array([":".join([e, k]) for e, k in zip(a, b)])
 
     def _gts_create_g_mat(self):
-        """
-        Compute the 'G Matrix'. This is a direct transpilation of the method
+        """Compute the G Matrix.
+
+        This is a direct transpilation of the method
         'CreateGmat' of the R package 'hts' (version 6.0.2)
         """
-
         total_len = len(self._group_names)
         sub_len = [0]
         for group_name in self._group_names:

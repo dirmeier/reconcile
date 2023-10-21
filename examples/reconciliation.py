@@ -9,7 +9,7 @@ import optax
 import pandas as pd
 from chex import Array, PRNGKey
 from jax import numpy as jnp
-from jax import random
+from jax import random as jr
 from jax.config import config
 from statsmodels.tsa.arima_process import arma_generate_sample
 
@@ -24,6 +24,7 @@ class GPForecaster(Forecaster):
     """Example implementation of a forecaster"""
 
     def __init__(self):
+        super().__init__()
         self._models: List = []
         self._xs: Array = None
         self._ys: Array = None
@@ -46,44 +47,42 @@ class GPForecaster(Forecaster):
         for i in np.arange(p):
             x, y = xs[:, [i], :], ys[:, [i], :]
             # fit a model for each time series
-            learned_params, _, D = self._fit_one(rng_key, x, y, niter)
+            opt_posterior, _, D = self._fit_one(rng_key, x, y, niter)
             # save the learned parameters and the original data
-            self._models[i] = learned_params, D
+            self._models[i] = opt_posterior, D
 
     def _fit_one(self, rng_key, x, y, niter):
         # here we use GPs to model the time series
         D = gpx.Dataset(X=x.reshape(-1, 1), y=y.reshape(-1, 1))
-        sgpr, q, likelihood = self._model(rng_key, D.n)
+        elbo, q, likelihood = self._model(rng_key, D.n)
 
-        parameter_state = gpx.initialise(sgpr, rng_key)
-        negative_elbo = jax.jit(sgpr.elbo(D, negative=True))
+        negative_elbo = jax.jit(elbo)
         optimiser = optax.adam(learning_rate=5e-3)
-        inference_state = gpx.fit(
+        opt_posterior, history = gpx.fit(
+            model=q,
             objective=negative_elbo,
-            parameter_state=parameter_state,
-            optax_optim=optimiser,
+            train_data=D,
+            optim=optimiser,
             num_iters=niter,
+            key=rng_key,
         )
-        learned_params, training_history = inference_state.unpack()
-        return learned_params, training_history, D
+        return opt_posterior, history, D
 
     @staticmethod
     def _model(rng_key, n):
-        z = random.uniform(rng_key, (20, 1))
+        z = jr.uniform(rng_key, (20, 1))
         prior = gpx.Prior(mean_function=gpx.Constant(), kernel=gpx.RBF())
         likelihood = gpx.Gaussian(num_datapoints=n)
         posterior = prior * likelihood
         q = gpx.CollapsedVariationalGaussian(
-            prior=prior,
-            likelihood=likelihood,
+            posterior=posterior,
             inducing_inputs=z,
         )
-        sgpr = gpx.CollapsedVI(posterior=posterior, variational_family=q)
-        return sgpr, q, likelihood
+        elbo = gpx.CollapsedELBO(negative=True)
+        return elbo, q, likelihood
 
     def posterior_predictive(self, rng_key, xs_test: Array):
-        """Compute the joint
-        posterior predictive distribution of all timeseries at xs_test"""
+        """Compute the joint posterior predictive distribution at xs_test."""
         chex.assert_rank(xs_test, 3)
 
         q = xs_test.shape[1]
@@ -91,12 +90,12 @@ class GPForecaster(Forecaster):
         covs = [None] * q
         for i in np.arange(q):
             x_test = xs_test[:, [i], :].reshape(-1, 1)
-            learned_params, D = self._models[i]
+            opt_posterior, D = self._models[i]
             _, q, likelihood = self._model(rng_key, D.n)
-            latent_dist = q(learned_params, D)(x_test)
-            predictive_dist = likelihood(learned_params, latent_dist)
+            latent_dist = opt_posterior(x_test, train_data=D)
+            predictive_dist = opt_posterior.posterior.likelihood(latent_dist)
             means[i] = predictive_dist.mean()
-            cov = jnp.linalg.cholesky(predictive_dist.covariance_matrix)
+            cov = predictive_dist.scale_tril
             covs[i] = cov.reshape((1, *cov.shape))
 
         # here we stack the means and covariance functions of all
@@ -163,7 +162,7 @@ def run():
 
     forecaster = GPForecaster()
     forecaster.fit(
-        random.PRNGKey(1),
+        jr.PRNGKey(1),
         all_timeseries[:, :, :90],
         all_features[:, :, :90],
     )
@@ -171,11 +170,11 @@ def run():
     recon = ProbabilisticReconciliation(grouping, forecaster)
     # do reconciliation via sampling
     _ = recon.sample_reconciled_posterior_predictive(
-        random.PRNGKey(1), all_features, n_iter=100, n_warmup=50
+        jr.PRNGKey(1), all_features, n_iter=100, n_warmup=50
     )
     # do reconciliation via optimization of the energy score
     _ = recon.fit_reconciled_posterior_predictive(
-        random.PRNGKey(1), all_features, n_samples=100
+        jr.PRNGKey(1), all_features, n_samples=100
     )
 
 
