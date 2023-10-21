@@ -1,6 +1,6 @@
 """reconcile: Probabilistic reconciliation of time series forecasts."""
 
-__version__ = "0.0.4"
+__version__ = "0.1.0"
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
