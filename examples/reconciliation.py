@@ -1,5 +1,3 @@
-from typing import List
-
 import chex
 import distrax
 import gpjax as gpx
@@ -7,17 +5,15 @@ import jax
 import numpy as np
 import optax
 import pandas as pd
-from chex import Array, PRNGKey
 from jax import numpy as jnp
 from jax import random as jr
-from jax.config import config
 from statsmodels.tsa.arima_process import arma_generate_sample
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
 from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
 
-config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 
 class GPForecaster(Forecaster):
@@ -25,16 +21,18 @@ class GPForecaster(Forecaster):
 
     def __init__(self):
         super().__init__()
-        self._models: List = []
-        self._xs: Array = None
-        self._ys: Array = None
+        self._models: list = []
+        self._xs: jax.Array = None
+        self._ys: jax.Array = None
 
     @property
     def data(self):
         """Returns the data"""
         return self._ys, self._xs
 
-    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array, niter=2000):
+    def fit(
+        self, rng_key: jr.PRNGKey, ys: jax.Array, xs: jax.Array, niter=2000
+    ):
         """Fit a model to each of the time series"""
 
         self._xs = xs
@@ -71,17 +69,20 @@ class GPForecaster(Forecaster):
     @staticmethod
     def _model(rng_key, n):
         z = jr.uniform(rng_key, (20, 1))
-        prior = gpx.Prior(mean_function=gpx.Constant(), kernel=gpx.RBF())
-        likelihood = gpx.Gaussian(num_datapoints=n)
+        prior = gpx.gps.Prior(
+            mean_function=gpx.mean_functions.Constant(),
+            kernel=gpx.kernels.RBF(),
+        )
+        likelihood = gpx.likelihoods.Gaussian(num_datapoints=n)
         posterior = prior * likelihood
-        q = gpx.CollapsedVariationalGaussian(
+        q = gpx.variational_families.CollapsedVariationalGaussian(
             posterior=posterior,
             inducing_inputs=z,
         )
-        elbo = gpx.CollapsedELBO(negative=True)
+        elbo = gpx.objectives.CollapsedELBO(negative=True)
         return elbo, q, likelihood
 
-    def posterior_predictive(self, rng_key, xs_test: Array):
+    def posterior_predictive(self, rng_key, xs_test: jax.Array):
         """Compute the joint posterior predictive distribution at xs_test."""
         chex.assert_rank(xs_test, 3)
 
@@ -109,7 +110,7 @@ class GPForecaster(Forecaster):
         return posterior_predictive
 
     def predictive_posterior_probability(
-        self, rng_key: PRNGKey, ys_test: Array, xs_test: Array
+        self, rng_key: jr.PRNGKey, ys_test: jax.Array, xs_test: jax.Array
     ):
         """Compute the log predictive posterior probability of an observation"""
         chex.assert_rank([ys_test, xs_test], [3, 3])

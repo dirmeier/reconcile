@@ -6,7 +6,6 @@ from typing import Callable
 import blackjax
 import jax
 import optax
-from chex import Array, PRNGKey
 from flax import linen as nn
 from flax.training.early_stopping import EarlyStopping
 from flax.training.train_state import TrainState
@@ -30,8 +29,8 @@ class ProbabilisticReconciliation:
 
     def sample_reconciled_posterior_predictive(
         self,
-        rng_key: PRNGKey,
-        xs_test: Array,
+        rng_key: jr.PRNGKey,
+        xs_test: jax.Array,
         n_chains=4,
         n_iter=2000,
         n_warmup=1000,
@@ -114,8 +113,8 @@ class ProbabilisticReconciliation:
 
     def fit_reconciled_posterior_predictive(
         self,
-        rng_key: PRNGKey,
-        xs_test: Array,
+        rng_key: jr.PRNGKey,
+        xs_test: jax.Array,
         n_samples=2000,
         net: Callable = None,
         n_iter: int = None,
@@ -152,7 +151,7 @@ class ProbabilisticReconciliation:
         def _projection(output_dim):
             class _network(nn.Module):
                 @nn.compact
-                def __call__(self, x: Array):
+                def __call__(self, x: jax.Array):
                     x = x.swapaxes(-2, -1)
                     x = nn.Sequential(
                         [
@@ -168,7 +167,9 @@ class ProbabilisticReconciliation:
 
             return _network() if net is None else net()
 
-        def _loss(y: Array, y_reconciled_0: Array, y_reconciled_1: Array):
+        def _loss(
+            y: jax.Array, y_reconciled_0: jax.Array, y_reconciled_1: jax.Array
+        ):
             y = y.reshape((1, *y.shape))
             y = jnp.tile(y, [y_reconciled_0.shape[0], 1, 1, 1])
             lhs = jnp.linalg.norm(y_reconciled_0 - y, axis=2, keepdims=True)
