@@ -1,7 +1,6 @@
 """Forecasting module."""
 
 import abc
-from typing import Tuple
 
 import distrax
 from chex import PRNGKey
@@ -19,7 +18,7 @@ class Forecaster(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def data(self) -> Tuple[Array, Array]:
+    def data(self) -> tuple[Array, Array]:
         """Returns the data set used for training.
 
         Returns:

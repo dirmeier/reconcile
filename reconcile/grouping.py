@@ -1,6 +1,5 @@
 """Grouping module."""
 
-
 import warnings
 from itertools import chain
 
@@ -115,18 +114,12 @@ class Grouping:
             token[i] = []
 
         for i in range(total_len):
-            token[i].append(
-                temp_tokens[
-                    cs[i],
-                ]
-            )
+            token[i].append(temp_tokens[cs[i],])
             if sub_len[i + 1] >= 2:
                 for j in range(1, sub_len[i + 1]):
                     col = self._paste0(
                         token[i][j - 1],
-                        temp_tokens[
-                            cs[i] + j,
-                        ],
+                        temp_tokens[cs[i] + j,],
                     )
                     token[i].append(col)
             token[i] = np.vstack(token[i])

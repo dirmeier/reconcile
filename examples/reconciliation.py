@@ -1,5 +1,3 @@
-from typing import List
-
 import chex
 import distrax
 import gpjax as gpx
@@ -25,7 +23,7 @@ class GPForecaster(Forecaster):
 
     def __init__(self):
         super().__init__()
-        self._models: List = []
+        self._models: list = []
         self._xs: Array = None
         self._ys: Array = None
 
