@@ -3,8 +3,7 @@
 import abc
 
 import distrax
-from chex import PRNGKey
-from jax import Array
+from jax import Array, random as jr
 
 
 class Forecaster(metaclass=abc.ABCMeta):
@@ -28,7 +27,7 @@ class Forecaster(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def fit(self, rng_key: PRNGKey, ys: Array, xs: Array) -> None:
+    def fit(self, rng_key: jr.PRNGKey, ys: Array, xs: Array) -> None:
         """Fit the forecaster to data.
 
         Fit a forecaster for each base and upper time series. Can be implemented
@@ -48,7 +47,7 @@ class Forecaster(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def posterior_predictive(
-        self, rng_key: PRNGKey, xs_test: Array
+        self, rng_key: jr.PRNGKey, xs_test: Array
     ) -> distrax.Distribution:
         """Computes the posterior predictive distribution at some input points.
 
@@ -68,7 +67,7 @@ class Forecaster(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def predictive_posterior_probability(
-        self, rng_key: PRNGKey, ys_test: Array, xs_test: Array
+        self, rng_key: jr.PRNGKey, ys_test: Array, xs_test: Array
     ) -> Array:
         """Evaluates the probability of an observation.
 
