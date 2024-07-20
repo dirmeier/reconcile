@@ -3,7 +3,8 @@
 import abc
 
 import distrax
-from jax import Array, random as jr
+from jax import Array
+from jax import random as jr
 
 
 class Forecaster(metaclass=abc.ABCMeta):

@@ -9,7 +9,8 @@ import optax
 from flax import linen as nn
 from flax.training.early_stopping import EarlyStopping
 from flax.training.train_state import TrainState
-from jax import numpy as jnp, random as jr
+from jax import numpy as jnp
+from jax import random as jr
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
@@ -166,7 +167,9 @@ class ProbabilisticReconciliation:
 
             return _network() if net is None else net()
 
-        def _loss(y: jax.Array, y_reconciled_0: jax.Array, y_reconciled_1: jax.Array):
+        def _loss(
+            y: jax.Array, y_reconciled_0: jax.Array, y_reconciled_1: jax.Array
+        ):
             y = y.reshape((1, *y.shape))
             y = jnp.tile(y, [y_reconciled_0.shape[0], 1, 1, 1])
             lhs = jnp.linalg.norm(y_reconciled_0 - y, axis=2, keepdims=True)

@@ -1,11 +1,12 @@
+import chex
 import distrax
 import gpjax as gpx
 import jax
 import numpy as np
 import optax
 import pandas as pd
-import chex
-from jax import numpy as jnp, random as jr
+from jax import numpy as jnp
+from jax import random as jr
 from statsmodels.tsa.arima_process import arma_generate_sample
 
 from reconcile.forecast import Forecaster
@@ -29,7 +30,9 @@ class GPForecaster(Forecaster):
         """Returns the data"""
         return self._ys, self._xs
 
-    def fit(self, rng_key: jr.PRNGKey, ys: jax.Array, xs: jax.Array, niter=2000):
+    def fit(
+        self, rng_key: jr.PRNGKey, ys: jax.Array, xs: jax.Array, niter=2000
+    ):
         """Fit a model to each of the time series"""
 
         self._xs = xs
@@ -66,7 +69,10 @@ class GPForecaster(Forecaster):
     @staticmethod
     def _model(rng_key, n):
         z = jr.uniform(rng_key, (20, 1))
-        prior = gpx.gps.Prior(mean_function=gpx.mean_functions.Constant(), kernel=gpx.kernels.RBF())
+        prior = gpx.gps.Prior(
+            mean_function=gpx.mean_functions.Constant(),
+            kernel=gpx.kernels.RBF(),
+        )
         likelihood = gpx.likelihoods.Gaussian(num_datapoints=n)
         posterior = prior * likelihood
         q = gpx.variational_families.CollapsedVariationalGaussian(
