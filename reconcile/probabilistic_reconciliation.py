@@ -81,7 +81,7 @@ class ProbabilisticReconciliation:
         initial_positions = self._forecaster.posterior_predictive(
             curr_key,
             xs_test,
-        ).sample(seed=rng_key, sample_shape=(n_chains, ))
+        ).sample(seed=rng_key, sample_shape=(n_chains,))
         initial_positions = {
             "b": self._grouping.extract_bottom_timeseries(initial_positions)
         }

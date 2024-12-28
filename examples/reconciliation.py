@@ -18,6 +18,7 @@ from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
 
 class NeuralProcessForecaster(Forecaster):
     """Example implementation of a forecaster."""
+
     def __init__(self):
         super().__init__()
         self._models: list = []
@@ -71,6 +72,7 @@ class NeuralProcessForecaster(Forecaster):
                 latent_encoder=(MLP([dim] * 3), MLP([dim, dim * 2])),
             )
             return np
+
         neural_process = get_neural_process()
         return neural_process
 
