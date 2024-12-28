@@ -2,9 +2,9 @@
 
 import abc
 
-import distrax
 from jax import Array
 from jax import random as jr
+from tensorflow_probability.substrates.jax import distributions as tfp
 
 
 class Forecaster(metaclass=abc.ABCMeta):
@@ -49,7 +49,7 @@ class Forecaster(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def posterior_predictive(
         self, rng_key: jr.PRNGKey, xs_test: Array
-    ) -> distrax.Distribution:
+    ) -> tfp.Distribution:
         """Computes the posterior predictive distribution at some input points.
 
         Args:
@@ -61,7 +61,7 @@ class Forecaster(metaclass=abc.ABCMeta):
                 elements as the original training data
 
         Return:
-            returns a distrax Distribution with batch shape (,P) and event
+            returns a TFP Distribution with batch shape (,P) and event
             shape (,M), such that a single sample has shape (P, M) and
             multiple samples have shape (S, P, M)
         """

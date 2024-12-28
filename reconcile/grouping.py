@@ -79,12 +79,12 @@ class Grouping:
 
     def extract_bottom_timeseries(self, y):
         """Getter for the bottom time series."""
-        return y[:, self.n_upper_timeseries :, :]
+        return y[..., self.n_upper_timeseries :, :]
 
     def upper_time_series(self, b):
         """Getter for upper time series."""
         y = self.all_timeseries(b)
-        return y[:, : self.n_upper_timeseries, :]
+        return y[..., : self.n_upper_timeseries, :]
 
     @staticmethod
     def _paste0(a, b):

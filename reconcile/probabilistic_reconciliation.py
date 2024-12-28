@@ -1,11 +1,12 @@
 """Probabilistic reconciliation module."""
 
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 import blackjax
 import jax
 import optax
+from einops import rearrange
 from flax import linen as nn
 from flax.training.early_stopping import EarlyStopping
 from flax.training.train_state import TrainState
@@ -108,7 +109,7 @@ class ProbabilisticReconciliation:
         states = _inference_loop(rng_key, kernel, initial_states, n_iter)
         b_samples = states.position["b"].block_until_ready()
         b_samples = b_samples[n_warmup:, ...]
-
+        b_samples = rearrange(b_samples, "... f b t-> ... (f b) t")
         return b_samples
 
     def fit_reconciled_posterior_predictive(
@@ -208,7 +209,7 @@ class ProbabilisticReconciliation:
         state = TrainState.create(apply_fn=model.apply, params=params, tx=tx)
 
         batch_size = 64
-        early_stop = EarlyStopping(min_delta=0.1, patience=5)
+        early_stop = EarlyStopping(min_delta=0.1, patience=10)
         itr = 0
         while True:
             sample_key, rng_key = jr.split(rng_key)
@@ -218,7 +219,7 @@ class ProbabilisticReconciliation:
             )
             state, loss = _step(state, ys, y_predictive_batch)
             logger.info("Loss after batch update %d", loss)
-            _, early_stop = early_stop.update(loss)
+            early_stop = early_stop.update(loss)
             if early_stop.should_stop and n_iter is None:
                 logger.info("Met early stopping criteria, breaking...")
                 break
@@ -231,5 +232,5 @@ class ProbabilisticReconciliation:
             seed=rng_key, sample_shape=(n_samples,)
         )
         b_reconciled = state.apply_fn(state.params, y_predictive)
-
+        b_reconciled = rearrange(b_reconciled, "... f b t-> ... (f b) t")
         return b_reconciled

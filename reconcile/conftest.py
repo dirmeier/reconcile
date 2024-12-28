@@ -6,7 +6,7 @@ import pytest
 from jax import numpy as jnp
 from jax import random
 
-from examples.reconciliation import GPForecaster
+from examples.reconciliation import NeuralProcessForecaster
 from reconcile import ProbabilisticReconciliation
 from reconcile.grouping import Grouping
 
@@ -40,11 +40,11 @@ def reconciliator():
     all_timeseries = grouping.all_timeseries(b)
     all_features = jnp.tile(x, [1, all_timeseries.shape[1], 1])
 
-    forecaster = GPForecaster()
+    forecaster = NeuralProcessForecaster()
     forecaster.fit(
         random.PRNGKey(1),
-        all_timeseries[:, :90, :],
-        all_features[:, :90, :],
+        all_timeseries[:, :, :90],
+        all_features[:, :, :90],
         100,
     )
 
