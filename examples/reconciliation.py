@@ -1,40 +1,37 @@
 import chex
-import distrax
-import gpjax as gpx
 import jax
 import numpy as np
-import optax
 import pandas as pd
+from einops import rearrange
+from jax import Array
 from jax import numpy as jnp
 from jax import random as jr
+from ramsey import NP, train_neural_process
+from ramsey.nn import MLP
 from statsmodels.tsa.arima_process import arma_generate_sample
+from tensorflow_probability.substrates.jax import distributions as tfd
 
 from reconcile.forecast import Forecaster
 from reconcile.grouping import Grouping
 from reconcile.probabilistic_reconciliation import ProbabilisticReconciliation
 
-jax.config.update("jax_enable_x64", True)
 
-
-class GPForecaster(Forecaster):
-    """Example implementation of a forecaster"""
-
+class NeuralProcessForecaster(Forecaster):
+    """Example implementation of a forecaster."""
     def __init__(self):
         super().__init__()
         self._models: list = []
-        self._xs: jax.Array = None
-        self._ys: jax.Array = None
+        self._xs: jax.Array
+        self._ys: jax.Array
 
     @property
-    def data(self):
-        """Returns the data"""
-        return self._ys, self._xs
+    def data(self) -> tuple[Array, Array]:
+        return self._xs, self._ys
 
     def fit(
         self, rng_key: jr.PRNGKey, ys: jax.Array, xs: jax.Array, niter=2000
     ):
-        """Fit a model to each of the time series"""
-
+        """Fit a model to each of the time series."""
         self._xs = xs
         self._ys = ys
         chex.assert_rank([ys, xs], [3, 3])
@@ -43,44 +40,39 @@ class GPForecaster(Forecaster):
         p = xs.shape[1]
         self._models = [None] * p
         for i in np.arange(p):
-            x, y = xs[:, [i], :], ys[:, [i], :]
+            x, y = xs[..., i, :], ys[..., i, :]
             # fit a model for each time series
-            opt_posterior, _, D = self._fit_one(rng_key, x, y, niter)
+            model, params = self._fit_one(rng_key, x, y, niter)
             # save the learned parameters and the original data
-            self._models[i] = opt_posterior, D
+            self._models[i] = model, params
 
     def _fit_one(self, rng_key, x, y, niter):
-        # here we use GPs to model the time series
-        D = gpx.Dataset(X=x.reshape(-1, 1), y=y.reshape(-1, 1))
-        elbo, q, likelihood = self._model(rng_key, D.n)
-
-        negative_elbo = jax.jit(elbo)
-        optimiser = optax.adam(learning_rate=5e-3)
-        opt_posterior, history = gpx.fit(
-            model=q,
-            objective=negative_elbo,
-            train_data=D,
-            optim=optimiser,
-            num_iters=niter,
-            key=rng_key,
+        # here we use neural processes to model the time series
+        model = self._model()
+        n_context, n_target = 10, 20
+        params, _ = train_neural_process(
+            rng_key,
+            model,
+            x=x.reshape(1, -1, 1),
+            y=y.reshape(1, -1, 1),
+            n_context=n_context,
+            n_target=n_target,
+            n_iter=1000,
+            batch_size=1,
         )
-        return opt_posterior, history, D
+        return model, params
 
     @staticmethod
-    def _model(rng_key, n):
-        z = jr.uniform(rng_key, (20, 1))
-        prior = gpx.gps.Prior(
-            mean_function=gpx.mean_functions.Constant(),
-            kernel=gpx.kernels.RBF(),
-        )
-        likelihood = gpx.likelihoods.Gaussian(num_datapoints=n)
-        posterior = prior * likelihood
-        q = gpx.variational_families.CollapsedVariationalGaussian(
-            posterior=posterior,
-            inducing_inputs=z,
-        )
-        elbo = gpx.objectives.CollapsedELBO(negative=True)
-        return elbo, q, likelihood
+    def _model():
+        def get_neural_process():
+            dim = 128
+            np = NP(
+                decoder=MLP([dim] * 3 + [2]),
+                latent_encoder=(MLP([dim] * 3), MLP([dim, dim * 2])),
+            )
+            return np
+        neural_process = get_neural_process()
+        return neural_process
 
     def posterior_predictive(self, rng_key, xs_test: jax.Array):
         """Compute the joint posterior predictive distribution at xs_test."""
@@ -88,25 +80,27 @@ class GPForecaster(Forecaster):
 
         q = xs_test.shape[1]
         means = [None] * q
-        covs = [None] * q
+        scales = [None] * q
         for i in np.arange(q):
-            x_test = xs_test[:, [i], :].reshape(-1, 1)
-            opt_posterior, D = self._models[i]
-            _, q, likelihood = self._model(rng_key, D.n)
-            latent_dist = opt_posterior(x_test, train_data=D)
-            predictive_dist = opt_posterior.posterior.likelihood(latent_dist)
-            means[i] = predictive_dist.mean()
-            cov = predictive_dist.scale_tril
-            covs[i] = cov.reshape((1, *cov.shape))
+            x_context = self._xs[..., i, :]
+            y_context = self._ys[..., i, :]
+            x_test = xs_test[..., i, :]
 
-        # here we stack the means and covariance functions of all
-        # GP models we used
-        means = jnp.vstack(means)
-        covs = jnp.vstack(covs)
+            model, params = self._models[i]
+            predictive_dist = model.apply(
+                variables=params,
+                rngs={"sample": rng_key},
+                x_context=x_context.reshape(1, -1, 1),
+                y_context=y_context.reshape(1, -1, 1),
+                x_target=x_test.reshape(1, -1, 1),
+            )
+            means[i] = predictive_dist.mean
+            scales[i] = predictive_dist.scale
 
-        # here we use a single distrax distribution to model the predictive
+        means = rearrange(jnp.vstack(means), "b t ... -> ... b t")
+        scales = rearrange(jnp.vstack(scales), "b t ... -> ... b t")
         # posterior of _all_ models
-        posterior_predictive = distrax.MultivariateNormalTri(means, covs)
+        posterior_predictive = tfd.MultivariateNormalDiag(means, scales)
         return posterior_predictive
 
     def predictive_posterior_probability(
@@ -147,12 +141,12 @@ def sample_hierarchical_timeseries():
         and the second one is a pd.DataFrame of groups
     """
 
-    def _group_names():
+    def _hierarchy():
         hierarchy = ["A:10", "A:20", "B:10", "B:20", "B:30"]
 
         return pd.DataFrame.from_dict({"h1": hierarchy})
 
-    return _sample_timeseries(100, 5), _group_names()
+    return _sample_timeseries(100, 5), _hierarchy()
 
 
 def run():
@@ -161,7 +155,7 @@ def run():
     all_timeseries = grouping.all_timeseries(b)
     all_features = jnp.tile(x, [1, all_timeseries.shape[1], 1])
 
-    forecaster = GPForecaster()
+    forecaster = NeuralProcessForecaster()
     forecaster.fit(
         jr.PRNGKey(1),
         all_timeseries[:, :, :90],
