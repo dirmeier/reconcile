@@ -7,6 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
   precommit:
     runs-on: ubuntu-latest
     steps:
@@ -55,11 +64,7 @@ jobs:
           version: "latest"
       - name: Install dependencies
         run: |
-          uv sync --dev
+          uv sync --all-groups
       - name: Run tests
         run: |
-          make tests
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          uv run python examples/reconciliation.py

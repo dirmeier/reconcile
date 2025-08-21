@@ -1,84 +1,90 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "probabilistic-reconciliation"
 description = "Probabilistic reconciliation of time series forecasts"
-authors = [{name = "Simon Dirmeier", email = "sfyrbnd@pm.me"}]
+authors = [{name = "Simon Dirmeier", email = "simd23@pm.me"}]
 readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["probabilistic reconciliation", "forecasting", "timeseries", "hierarchical time series"]
-classifiers= [
+classifiers=[
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "blackjax>=1.2.4",
-    "chex>=0.1.8",
-    "einops>=0.8.0",
-    "flax>=0.10.2",
-    "jax>=0.4.38",
-    "optax>=0.2.4",
+    "blackjax-nightly>=0.9.6.post127",
+    "distrax>=0.1.2",
+    "chex>=0.1.5",
+    "jaxlib>=0.4.30",
+    "jax>=0.4.30",
+    "flax>=0.7.3",
+    "gpjax>=0.6.9",
+    "optax>=0.1.4",
     "pandas>=1.5.1",
-    "ramsey>=0.2.1",
-    "tfp-nightly[jax]>=0.26.0.dev20241227",
+    "tfp-nightly>=0.26.0.dev20250821",
+    "einops>=0.8.1",
 ]
 dynamic = ["version"]
 
 [project.urls]
-homepage = "https://github.com/dirmeier/reconcile"
+Homepage = "https://github.com/dirmeier/reconcile"
 
-[tool.hatch.version]
-path = "reconcile/__init__.py"
+[project.optional-dependencies]
+all = []
 
-[tool.hatch.build.targets.wheel]
-packages = ["reconcile"]
-
-[tool.hatch.build.targets.sdist]
-exclude = [
-    "/.github",
-    "./gitignore",
-    "/.pre-commit-config.yaml"
-]
-
-[tool.hatch.envs.test]
-dependencies = [
+[dependency-groups]
+dev = [
     "ruff>=0.3.0",
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
+    "gpjax>=0.5.0",
     "statsmodels>=0.13.2"
 ]
-
-[tool.hatch.envs.examples]
-dependencies = [
-    "statsmodels>=0.13.2"
+examples = [
+  "gpjax>=0.5.0",
+  "ramsey==0.2.1",
+  "statsmodels>=0.13.2",
 ]
 
-[tool.hatch.envs.test.scripts]
-lint = 'ruff check reconcile examples'
-test = 'pytest -v --doctest-modules --cov=./reconcile --cov-report=xml reconcile'
+[tool.setuptools]
+packages = ["reconcile"]
 
-[tool.hatch.envs.examples.scripts]
-reconciliation = 'python examples/reconciliation.py'
+[tool.setuptools.dynamic]
+version = {attr = "reconcile.__init__.__version__"}
 
 [tool.bandit]
-skips = ["B101"]
+skips = ["B101", "B310"]
+
+[tool.mypy]
+show_error_codes = true
+no_implicit_optional = true
+
+[tool.pytest.ini_options]
+addopts = "-v --doctest-modules --cov=./reconcile --cov-report=xml"
+testpaths = [
+    "reconcile"
+]
 
 [tool.ruff]
-fix = true
+indent-width = 2
 line-length = 80
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F"]
-extend-select = ["UP",  "I", "PL", "S"]
-ignore =["S101", "PLR2004", "PLR0913", "E2"]
+select = ["D", "E", "F", "W", "I001"]
+extend-select = [
+  "UP", "I", "PL", "S"
+]
+ignore = ["S101", "ANN101", "PLR2044", "PLR0913", "PLR2004"]
+exclude = ["*_test.py", "docs/**", "examples/**"]
+
 
 [tool.ruff.lint.pydocstyle]
 convention= 'google'
+
