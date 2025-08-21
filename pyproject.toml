@@ -41,11 +41,13 @@ all = []
 
 [dependency-groups]
 dev = [
-    "ruff>=0.3.0",
+    "gitlint",
+    "jupyter",
+    "pre-commit",
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
-    "gpjax>=0.5.0",
-    "statsmodels>=0.13.2"
+    "ruff",
+    "wandb>=0.21.1",
 ]
 examples = [
   "gpjax>=0.5.0",
@@ -87,4 +89,3 @@ exclude = ["*_test.py", "docs/**", "examples/**"]
 
 [tool.ruff.lint.pydocstyle]
 convention= 'google'
-

@@ -1,7 +1,7 @@
 """Probabilistic reconciliation module."""
 
 import logging
-from collections.abc import Callable
+from typing import Any
 
 import blackjax
 import jax
@@ -115,8 +115,8 @@ class ProbabilisticReconciliation:
     rng_key: jr.PRNGKey,
     xs_test: jax.Array,
     n_samples=2000,
-    net: Callable = None,
-    n_iter: int = None,
+    net: Any | None = None,
+    n_iter: int | None = None,
   ):
     """Probabilistic reconciliation using energy score optimization.
 

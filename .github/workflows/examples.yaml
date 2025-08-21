@@ -7,15 +7,6 @@ on:
     branches: [ main ]
 
 jobs:
-name: ci
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
   precommit:
     runs-on: ubuntu-latest
     steps:
