@@ -7,40 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  precommit:
+  examples:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: pre-commit/action@v3.0.0
-
-  lints:
-    runs-on: ubuntu-latest
-    needs:
-      - precommit
-    strategy:
-      matrix:
-        python-version: [ 3.12 ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-      - uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-      - name: Install dependencies
-        run: |
-          uv sync --dev
-      - name: Run lints
-        run: |
-          make lints
-
-  tests:
-    runs-on: ubuntu-latest
-    needs:
-      - lints
     strategy:
       matrix:
         python-version: [ 3.12 ]
